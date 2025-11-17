@@ -7,6 +7,18 @@ export interface ElectronAPI {
     chrome: string;
     electron: string;
   };
+  requestListDirectory: () => void;
+  onConfirmRequest: (callback: (data: { path: string }) => void) => void;
+  sendConfirmResponse: (confirmed: boolean) => void;
+  onDirectoryResult: (
+    callback: (data: {
+      success: boolean;
+      files?: string[];
+      message?: string;
+    }) => void,
+  ) => void;
+  removeConfirmRequestListener: () => void;
+  removeDirectoryResultListener: () => void;
 }
 
 // Extend Window interface for type safety
