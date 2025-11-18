@@ -1,10 +1,19 @@
 import React, { createContext, useContext, useState } from 'react';
-import type { SessionData, Message } from '../client/types/entities';
+import type {
+  WorkspaceData,
+  SessionData,
+  Message,
+} from '../client/types/entities';
 import { Button } from '@/components/ui/button';
+import { useStore } from '../store';
 
 // Define the context type
-interface SessionContextType {
-  session: SessionData | null;
+interface WorkspaceContextType {
+  workspace: WorkspaceData;
+  activeSession: SessionData | null;
+  allSessions: SessionData[];
+  activeSessionId: string | null;
+  setActiveSessionId: (id: string) => void;
   messages: Message[];
   inputValue: string;
   isLoading: boolean;
@@ -13,43 +22,96 @@ interface SessionContextType {
 }
 
 // Create the context
-const SessionContext = createContext<SessionContextType | undefined>(undefined);
+const WorkspaceContext = createContext<WorkspaceContextType | undefined>(
+  undefined,
+);
 
 // Custom hook to use the context
-export function useSessionContext() {
-  const context = useContext(SessionContext);
+export function useWorkspaceContext() {
+  const context = useContext(WorkspaceContext);
   if (!context) {
-    throw new Error('useSessionContext must be used within SessionPanel');
+    throw new Error('useWorkspaceContext must be used within WorkspacePanel');
   }
   return context;
 }
 
 // Main component
-export const SessionPanel = ({
-  session,
+export const WorkspacePanel = ({
+  workspace,
   onSendMessage,
 }: {
-  session: SessionData | null;
-  onSendMessage: (content: string) => Promise<void>;
+  workspace: WorkspaceData | null;
+  onSendMessage: (sessionId: string, content: string) => Promise<void>;
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [activeSessionId, setActiveSessionId] = useState<string | null>(
+    workspace?.sessionIds[0] || null,
+  );
+
+  // // Fetch all sessions from the store
+  // const allSessions = workspace?.sessionIds
+  //   .map(id => useStore(state => state.sessions[id]))
+  //   .filter(Boolean) as SessionData[] || [];
+
+  // // Get the active session
+  // const activeSession = activeSessionId
+  //   ? useStore(state => state.sessions[activeSessionId])
+  //   : null;
+
+  const allSessions: SessionData[] = [];
+  const activeSession: SessionData | null = null;
+
+  // Update activeSessionId when workspace changes
+  React.useEffect(() => {
+    if (workspace) {
+      // If no active session or active session doesn't belong to this workspace
+      if (!activeSessionId || !workspace.sessionIds.includes(activeSessionId)) {
+        setActiveSessionId(workspace.sessionIds[0] || null);
+      }
+    } else {
+      setActiveSessionId(null);
+    }
+  }, [workspace, activeSessionId]);
 
   const sendMessage = async (content: string) => {
-    if (!content.trim() || isLoading) return;
+    if (!content.trim() || isLoading || !activeSessionId) return;
 
     setIsLoading(true);
     try {
-      await onSendMessage(content);
+      await onSendMessage(activeSessionId, content);
       setInputValue('');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const contextValue: SessionContextType = {
-    session,
-    messages: session?.messages || [],
+  // Handle session switching - reset input
+  const handleSetActiveSessionId = (id: string) => {
+    setActiveSessionId(id);
+    setInputValue('');
+  };
+
+  if (!workspace) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center" style={{ color: 'var(--text-secondary)' }}>
+          <p className="text-lg">No workspace selected</p>
+          <p className="text-sm mt-2">
+            Select a workspace from the sidebar to get started
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const contextValue: WorkspaceContextType = {
+    workspace,
+    activeSession,
+    allSessions,
+    activeSessionId,
+    setActiveSessionId: handleSetActiveSessionId,
+    messages: activeSession?.messages || [],
     inputValue,
     isLoading,
     sendMessage,
@@ -57,24 +119,24 @@ export const SessionPanel = ({
   };
 
   return (
-    <SessionContext.Provider value={contextValue}>
+    <WorkspaceContext.Provider value={contextValue}>
       <div
         className="flex flex-col h-full"
         style={{ backgroundColor: 'var(--bg-primary)' }}
       >
-        <SessionPanel.Header />
-        <SessionPanel.TabBar />
-        <SessionPanel.WorkspaceInfo />
-        <SessionPanel.Messages />
-        <SessionPanel.ChatInput />
+        <WorkspacePanel.Header />
+        <WorkspacePanel.SessionTabs />
+        <WorkspacePanel.WorkspaceInfo />
+        <WorkspacePanel.Messages />
+        <WorkspacePanel.ChatInput />
       </div>
-    </SessionContext.Provider>
+    </WorkspaceContext.Provider>
   );
 };
 
 // Compound components
-SessionPanel.Header = function Header() {
-  const { session } = useSessionContext();
+WorkspacePanel.Header = function Header() {
+  const { workspace } = useWorkspaceContext();
 
   return (
     <div
@@ -87,12 +149,10 @@ SessionPanel.Header = function Header() {
             className="text-lg font-semibold"
             style={{ color: 'var(--text-primary)' }}
           >
-            {session
-              ? `Session ${session.id.substring(0, 8)}`
-              : 'No Session Selected'}
+            Workspace: {workspace.branch}
           </h2>
           <p className="text-sm" style={{ color: '#666' }}>
-            {session ? `Workspace: ${session.workspaceId.substring(0, 8)}` : ''}
+            {workspace.repoPath}
           </p>
         </div>
         <Button variant="default" size="sm">
@@ -103,47 +163,72 @@ SessionPanel.Header = function Header() {
   );
 };
 
-SessionPanel.TabBar = function TabBar() {
+WorkspacePanel.SessionTabs = function SessionTabs() {
+  const { allSessions, activeSessionId, setActiveSessionId } =
+    useWorkspaceContext();
+
+  if (allSessions.length === 0) {
+    return (
+      <div
+        className="flex items-center justify-center py-4"
+        style={{
+          borderBottom: '1px solid var(--border-subtle)',
+          backgroundColor: 'var(--bg-surface)',
+        }}
+      >
+        <p className="text-sm" style={{ color: '#999' }}>
+          No sessions yet
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div
-      className="flex"
+      className="flex overflow-x-auto"
       style={{
         borderBottom: '1px solid var(--border-subtle)',
         backgroundColor: 'var(--bg-surface)',
       }}
     >
-      <SessionPanel.Tab isActive>Chat</SessionPanel.Tab>
-      <SessionPanel.Tab>Files</SessionPanel.Tab>
-      <SessionPanel.Tab>Terminal</SessionPanel.Tab>
+      {allSessions.map((session) => (
+        <WorkspacePanel.SessionTab
+          key={session.id}
+          session={session}
+          isActive={session.id === activeSessionId}
+          onClick={() => setActiveSessionId(session.id)}
+        />
+      ))}
     </div>
   );
 };
 
-SessionPanel.Tab = function Tab({
-  children,
+WorkspacePanel.SessionTab = function SessionTab({
+  session,
   isActive,
+  onClick,
 }: {
-  children: React.ReactNode;
-  isActive?: boolean;
+  session: SessionData;
+  isActive: boolean;
+  onClick: () => void;
 }) {
   return (
     <div
-      className="px-4 py-2 text-sm cursor-pointer"
+      className="px-4 py-2 text-sm cursor-pointer whitespace-nowrap"
       style={
         isActive
           ? { borderBottom: '2px solid #0070f3', color: 'var(--text-primary)' }
           : { color: '#666' }
       }
+      onClick={onClick}
     >
-      {children}
+      Session {session.id.substring(0, 8)}
     </div>
   );
 };
 
-SessionPanel.WorkspaceInfo = function WorkspaceInfo() {
-  const { session } = useSessionContext();
-
-  if (!session) return null;
+WorkspacePanel.WorkspaceInfo = function WorkspaceInfo() {
+  const { workspace } = useWorkspaceContext();
 
   return (
     <div
@@ -158,20 +243,40 @@ SessionPanel.WorkspaceInfo = function WorkspaceInfo() {
         style={{ color: 'var(--text-primary)' }}
       >
         <BranchIcon />
-        <span className="ml-2">main</span>
+        <span className="ml-2">{workspace.branch}</span>
         <span className="mx-2">•</span>
-        <span style={{ color: '#666' }}>Created 2 hours ago</span>
+        <span style={{ color: '#666' }}>
+          {workspace.metadata.status === 'active'
+            ? 'Active'
+            : workspace.metadata.status}
+        </span>
+        {workspace.gitState.isDirty && (
+          <>
+            <span className="mx-2">•</span>
+            <span style={{ color: '#f59e0b' }}>Uncommitted changes</span>
+          </>
+        )}
         <span className="ml-auto flex items-center">
-          <StatusIcon />
-          <span className="ml-1">Active</span>
+          <StatusIcon status={workspace.metadata.status} />
+          <span className="ml-1 capitalize">{workspace.metadata.status}</span>
         </span>
       </div>
     </div>
   );
 };
 
-SessionPanel.Messages = function Messages() {
-  const { messages } = useSessionContext();
+WorkspacePanel.Messages = function Messages() {
+  const { messages, activeSessionId } = useWorkspaceContext();
+
+  if (!activeSessionId) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center" style={{ color: '#999' }}>
+          Select a session to view messages
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
@@ -182,7 +287,7 @@ SessionPanel.Messages = function Messages() {
       ) : (
         <div className="space-y-4">
           {messages.map((message) => (
-            <SessionPanel.Message key={message.id} message={message} />
+            <WorkspacePanel.Message key={message.id} message={message} />
           ))}
         </div>
       )}
@@ -190,7 +295,7 @@ SessionPanel.Messages = function Messages() {
   );
 };
 
-SessionPanel.Message = function Message({ message }: { message: Message }) {
+WorkspacePanel.Message = function Message({ message }: { message: Message }) {
   const isUser = message.role === 'user';
 
   return (
@@ -226,14 +331,16 @@ SessionPanel.Message = function Message({ message }: { message: Message }) {
   );
 };
 
-SessionPanel.ChatInput = function ChatInput() {
-  const { inputValue, setInputValue, sendMessage, isLoading } =
-    useSessionContext();
+WorkspacePanel.ChatInput = function ChatInput() {
+  const { inputValue, setInputValue, sendMessage, isLoading, activeSessionId } =
+    useWorkspaceContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(inputValue);
   };
+
+  const isDisabled = !activeSessionId || isLoading;
 
   return (
     <div
@@ -246,24 +353,32 @@ SessionPanel.ChatInput = function ChatInput() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Type your message..."
+            placeholder={
+              activeSessionId
+                ? 'Type your message...'
+                : 'Select a session to send messages'
+            }
             className="w-full rounded-lg px-4 py-2 pr-12 focus:outline-none focus:ring-2"
             style={{
               backgroundColor: 'var(--bg-surface)',
               color: 'var(--text-primary)',
               border: '1px solid var(--border-subtle)',
             }}
-            disabled={isLoading}
+            disabled={isDisabled}
           />
-          <SessionPanel.Toolbar />
+          <WorkspacePanel.Toolbar />
         </div>
-        <SessionPanel.SendButton />
+        <WorkspacePanel.SendButton />
       </form>
     </div>
   );
 };
 
-SessionPanel.Toolbar = function Toolbar() {
+WorkspacePanel.Toolbar = function Toolbar() {
+  const { activeSessionId } = useWorkspaceContext();
+
+  if (!activeSessionId) return null;
+
   return (
     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
       <button
@@ -278,10 +393,10 @@ SessionPanel.Toolbar = function Toolbar() {
   );
 };
 
-SessionPanel.SendButton = function SendButton() {
-  const { inputValue, isLoading } = useSessionContext();
+WorkspacePanel.SendButton = function SendButton() {
+  const { inputValue, isLoading, activeSessionId } = useWorkspaceContext();
 
-  const canSend = inputValue.trim() && !isLoading;
+  const canSend = inputValue.trim() && !isLoading && activeSessionId;
 
   return (
     <button
@@ -311,10 +426,16 @@ function BranchIcon() {
   );
 }
 
-function StatusIcon() {
+function StatusIcon({ status }: { status: string }) {
+  const color =
+    status === 'active'
+      ? '#10B981'
+      : status === 'archived'
+        ? '#6B7280'
+        : '#F59E0B';
   return (
     <svg width="16" height="16" viewBox="0 0 16 16">
-      <circle cx="8" cy="8" r="5" fill="#10B981" />
+      <circle cx="8" cy="8" r="5" fill={color} />
     </svg>
   );
 }

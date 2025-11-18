@@ -10,37 +10,37 @@ function App() {
   // Get state and actions from the store
   const {
     repos,
+    workspaces,
     selectedRepoPath,
     selectedWorkspaceId,
-    selectedSessionId,
     selectRepo,
     selectWorkspace,
-    selectSession,
     addMessage,
   } = useStore();
 
+  // Get the selected workspace
+  const selectedWorkspace = selectedWorkspaceId
+    ? workspaces[selectedWorkspaceId]
+    : null;
+
   // Mock function to send a message
-  const handleSendMessage = async (content: string) => {
-    if (selectedSessionId) {
-      // In a real implementation, this would send the message via WebSocket
-      // For now, we'll just add it directly to the store
-      addMessage(selectedSessionId, {
-        role: 'user',
-        content,
+  const handleSendMessage = async (sessionId: string, content: string) => {
+    // In a real implementation, this would send the message via WebSocket
+    // For now, we'll just add it directly to the store
+    addMessage(sessionId, {
+      role: 'user',
+      content,
+      timestamp: Date.now(),
+    });
+
+    // Simulate a response after a short delay
+    setTimeout(() => {
+      addMessage(sessionId, {
+        role: 'assistant',
+        content: `Echo: ${content}`,
         timestamp: Date.now(),
       });
-
-      // Simulate a response after a short delay
-      setTimeout(() => {
-        if (selectedSessionId) {
-          addMessage(selectedSessionId, {
-            role: 'assistant',
-            content: `Echo: ${content}`,
-            timestamp: Date.now(),
-          });
-        }
-      }, 1000);
-    }
+    }, 1000);
   };
 
   // Mock function to execute a command
@@ -71,10 +71,9 @@ function App() {
         repos={Object.values(repos)}
         selectedRepoPath={selectedRepoPath}
         selectedWorkspaceId={selectedWorkspaceId}
-        selectedSessionId={selectedSessionId}
+        selectedWorkspace={selectedWorkspace}
         onSelectRepo={selectRepo}
         onSelectWorkspace={selectWorkspace}
-        onSelectSession={selectSession}
         onSendMessage={handleSendMessage}
         onExecuteCommand={handleExecuteCommand}
       />
