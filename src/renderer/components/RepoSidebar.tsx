@@ -29,6 +29,15 @@ import {
   DialogFooter,
   DialogClose,
 } from './ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogPopup,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogClose,
+} from './ui/alert-dialog';
 import { Button } from './ui/button';
 
 export const RepoSidebar = ({
@@ -49,18 +58,25 @@ export const RepoSidebar = ({
   const deleteRepo = useStore((state) => state.deleteRepo);
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [alertDialogOpen, setAlertDialogOpen] = useState(false);
   const [selectedRepoForDialog, setSelectedRepoForDialog] =
     useState<RepoData | null>(null);
 
   const handleRepoInfoClick = (repo: RepoData, e: React.MouseEvent) => {
     e.stopPropagation();
+    setAlertDialogOpen(false); // Ensure alert is closed
     setSelectedRepoForDialog(repo);
     setDialogOpen(true);
   };
 
   const handleDeleteRepo = () => {
+    setAlertDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
     if (selectedRepoForDialog) {
       deleteRepo(selectedRepoForDialog.path);
+      setAlertDialogOpen(false);
       setDialogOpen(false);
       setSelectedRepoForDialog(null);
     }
@@ -181,7 +197,13 @@ export const RepoSidebar = ({
 
       <RepoSidebar.Footer />
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) setAlertDialogOpen(false);
+        }}
+      >
         <DialogPopup>
           <DialogHeader>
             <DialogTitle>Repository Information</DialogTitle>
@@ -218,7 +240,7 @@ export const RepoSidebar = ({
           </div>
 
           <DialogFooter>
-            <DialogClose asChild>
+            <DialogClose>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
             <Button
@@ -232,6 +254,31 @@ export const RepoSidebar = ({
           </DialogFooter>
         </DialogPopup>
       </Dialog>
+
+      <AlertDialog open={alertDialogOpen} onOpenChange={setAlertDialogOpen}>
+        <AlertDialogPopup>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Repository?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {selectedRepoForDialog &&
+                `This will permanently delete '${selectedRepoForDialog.name}' and its ${selectedRepoForDialog.workspaceIds.length} workspace(s). This action cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogClose>
+              <Button variant="outline">Cancel</Button>
+            </AlertDialogClose>
+            <Button
+              variant="destructive"
+              onClick={handleConfirmDelete}
+              className="gap-2"
+            >
+              <HugeiconsIcon icon={DeleteIcon} size={16} strokeWidth={1.5} />
+              Delete
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogPopup>
+      </AlertDialog>
     </div>
   );
 };

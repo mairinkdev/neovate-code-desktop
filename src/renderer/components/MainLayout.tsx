@@ -1,11 +1,11 @@
 import React from 'react';
 import { RepoSidebar } from './RepoSidebar';
 import { SessionPanel } from './SessionPanel';
-import { WorkspaceChanges } from './WorkspaceChanges';
-import { Terminal } from './Terminal';
+// import { WorkspaceChanges } from './WorkspaceChanges';
+// import { Terminal } from './Terminal';
 import type {
   RepoData,
-  WorkspaceData,
+  // WorkspaceData,
   SessionData,
 } from '../client/types/entities';
 
@@ -30,39 +30,39 @@ export const MainLayout = ({
   onSendMessage: (content: string) => Promise<void>;
   onExecuteCommand: (command: string) => Promise<void>;
 }) => {
-  // Get the selected workspace and session data
-  const selectedWorkspace = selectedWorkspaceId
-    ? Object.values(
-        repos.flatMap((repo) =>
-          repo.workspaceIds.map((id) => {
-            // In a real implementation, we would get the workspace from the store
-            // For now, we'll create a mock workspace
-            return {
-              id,
-              repoPath: repo.path,
-              branch: 'main',
-              worktreePath: `/path/to/${id}`,
-              sessionIds: [],
-              gitState: {
-                currentCommit: 'abc123',
-                isDirty: false,
-                pendingChanges: [],
-              },
-              metadata: {
-                createdAt: Date.now(),
-                description: 'Mock workspace',
-                status: 'active',
-              },
-              context: {
-                activeFiles: [],
-                settings: {},
-                preferences: {},
-              },
-            } as WorkspaceData;
-          }),
-        ),
-      ).find((w) => w.id === selectedWorkspaceId) || null
-    : null;
+  // Get the selected session data
+  // const selectedWorkspace = selectedWorkspaceId
+  //   ? Object.values(
+  //       repos.flatMap((repo) =>
+  //         repo.workspaceIds.map((id) => {
+  //           // In a real implementation, we would get the workspace from the store
+  //           // For now, we'll create a mock workspace
+  //           return {
+  //             id,
+  //             repoPath: repo.path,
+  //             branch: 'main',
+  //             worktreePath: `/path/to/${id}`,
+  //             sessionIds: [],
+  //             gitState: {
+  //               currentCommit: 'abc123',
+  //               isDirty: false,
+  //               pendingChanges: [],
+  //             },
+  //             metadata: {
+  //               createdAt: Date.now(),
+  //               description: 'Mock workspace',
+  //               status: 'active',
+  //             },
+  //             context: {
+  //               activeFiles: [],
+  //               settings: {},
+  //               preferences: {},
+  //             },
+  //           } as WorkspaceData;
+  //         }),
+  //       ),
+  //     ).find((w) => w.id === selectedWorkspaceId) || null
+  //   : null;
 
   const selectedSession = selectedSessionId
     ? ({
@@ -108,13 +108,14 @@ export const MainLayout = ({
           />
         </div>
 
-        <div
+        {/* Right column - hidden for now, will implement later */}
+        {/* <div
           className="flex flex-col w-80"
           style={{ borderLeft: '1px solid var(--border-subtle)' }}
         >
           <WorkspaceChanges workspace={selectedWorkspace} />
           <Terminal onExecuteCommand={onExecuteCommand} />
-        </div>
+        </div> */}
       </div>
     </div>
   );
