@@ -6,3 +6,4 @@ export { MainLayout } from './MainLayout';
 
 // Test components
 export { SystemInfo, DirectoryList } from './test';
+export { TestUIComponents } from './TestUIComponents';
