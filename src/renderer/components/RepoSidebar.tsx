@@ -38,6 +38,13 @@ import {
   AlertDialogFooter,
   AlertDialogClose,
 } from './ui/alert-dialog';
+import {
+  Empty,
+  EmptyMedia,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+} from './ui/empty';
 import { Button } from './ui/button';
 
 export const RepoSidebar = ({
@@ -98,101 +105,120 @@ export const RepoSidebar = ({
       <RepoSidebar.Header />
 
       <div className="flex-1 overflow-y-auto">
-        <Accordion defaultValue={allRepoIds}>
-          {repos.map((repo) => (
-            <AccordionItem key={repo.path} value={repo.path}>
-              <AccordionTrigger className="px-3 py-2 hover:bg-opacity-50">
-                <div className="flex items-center gap-2 flex-1">
-                  <HugeiconsIcon
-                    icon={FolderIcon}
-                    size={18}
-                    strokeWidth={1.5}
-                  />
-                  <span className="font-medium text-sm">{repo.name}</span>
-                  <span
-                    className="ml-auto text-xs px-2 py-0.5 rounded"
-                    style={{
-                      backgroundColor: 'var(--bg-base)',
-                      color: 'var(--text-secondary)',
-                    }}
-                  >
-                    {repo.workspaceIds.length}
-                  </span>
-                  <button
-                    className="p-1 rounded hover:bg-opacity-70"
-                    onClick={(e) => handleRepoInfoClick(repo, e)}
-                    style={{ color: 'var(--text-secondary)' }}
-                  >
+        {repos.length === 0 ? (
+          <Empty>
+            <EmptyMedia variant="icon">
+              <HugeiconsIcon
+                icon={FolderIcon}
+                size={48}
+                strokeWidth={1.5}
+                style={{ color: 'var(--text-tertiary)' }}
+              />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>No repositories</EmptyTitle>
+              <EmptyDescription>
+                Click the + icon below to add your first repository
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <Accordion defaultValue={allRepoIds}>
+            {repos.map((repo) => (
+              <AccordionItem key={repo.path} value={repo.path}>
+                <AccordionTrigger className="px-3 py-2 hover:bg-opacity-50">
+                  <div className="flex items-center gap-2 flex-1">
                     <HugeiconsIcon
-                      icon={InformationCircleIcon}
-                      size={16}
+                      icon={FolderIcon}
+                      size={18}
                       strokeWidth={1.5}
                     />
-                  </button>
-                </div>
-              </AccordionTrigger>
-
-              <AccordionPanel>
-                <div className="ml-4 space-y-1">
-                  <div
-                    className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded hover:bg-opacity-50 transition-colors"
-                    style={{ color: 'var(--text-secondary)' }}
-                    onClick={() => handleNewWorkspace(repo.path)}
-                  >
-                    <HugeiconsIcon
-                      icon={PlusSignIcon}
-                      size={16}
-                      strokeWidth={1.5}
-                    />
-                    <span className="text-sm">New workspace</span>
+                    <span className="font-medium text-sm">{repo.name}</span>
+                    <span
+                      className="ml-auto text-xs px-2 py-0.5 rounded"
+                      style={{
+                        backgroundColor: 'var(--bg-base)',
+                        color: 'var(--text-secondary)',
+                      }}
+                    >
+                      {repo.workspaceIds.length}
+                    </span>
+                    <button
+                      className="p-1 rounded hover:bg-opacity-70"
+                      onClick={(e) => handleRepoInfoClick(repo, e)}
+                      style={{ color: 'var(--text-secondary)' }}
+                    >
+                      <HugeiconsIcon
+                        icon={InformationCircleIcon}
+                        size={16}
+                        strokeWidth={1.5}
+                      />
+                    </button>
                   </div>
+                </AccordionTrigger>
 
-                  {repo.workspaceIds.map((workspaceId) => {
-                    const workspace = workspaces[workspaceId];
-                    if (!workspace) return null;
+                <AccordionPanel>
+                  <div className="ml-4 space-y-1">
+                    <div
+                      className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded hover:bg-opacity-50 transition-colors"
+                      style={{ color: 'var(--text-secondary)' }}
+                      onClick={() => handleNewWorkspace(repo.path)}
+                    >
+                      <HugeiconsIcon
+                        icon={PlusSignIcon}
+                        size={16}
+                        strokeWidth={1.5}
+                      />
+                      <span className="text-sm">New workspace</span>
+                    </div>
 
-                    const isSelected = selectedWorkspaceId === workspaceId;
-                    const changesCount =
-                      workspace.gitState.pendingChanges.length;
+                    {repo.workspaceIds.map((workspaceId) => {
+                      const workspace = workspaces[workspaceId];
+                      if (!workspace) return null;
 
-                    return (
-                      <div
-                        key={workspaceId}
-                        className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors"
-                        style={
-                          isSelected
-                            ? { backgroundColor: 'var(--bg-base)' }
-                            : {}
-                        }
-                        onClick={() => onSelectWorkspace(workspaceId)}
-                      >
-                        <HugeiconsIcon
-                          icon={GitBranchIcon}
-                          size={16}
-                          strokeWidth={1.5}
-                        />
-                        <span className="flex-1 text-sm">
-                          {workspace.branch}
-                        </span>
-                        {changesCount > 0 && (
-                          <span
-                            className="text-xs px-1.5 py-0.5 rounded"
-                            style={{
-                              backgroundColor: '#fef3c7',
-                              color: '#92400e',
-                            }}
-                          >
-                            {changesCount}
+                      const isSelected = selectedWorkspaceId === workspaceId;
+                      const changesCount =
+                        workspace.gitState.pendingChanges.length;
+
+                      return (
+                        <div
+                          key={workspaceId}
+                          className="flex items-center gap-2 px-3 py-2 cursor-pointer rounded transition-colors"
+                          style={
+                            isSelected
+                              ? { backgroundColor: 'var(--bg-base)' }
+                              : {}
+                          }
+                          onClick={() => onSelectWorkspace(workspaceId)}
+                        >
+                          <HugeiconsIcon
+                            icon={GitBranchIcon}
+                            size={16}
+                            strokeWidth={1.5}
+                          />
+                          <span className="flex-1 text-sm">
+                            {workspace.branch}
                           </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </AccordionPanel>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                          {changesCount > 0 && (
+                            <span
+                              className="text-xs px-1.5 py-0.5 rounded"
+                              style={{
+                                backgroundColor: '#fef3c7',
+                                color: '#92400e',
+                              }}
+                            >
+                              {changesCount}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </AccordionPanel>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
       </div>
 
       <RepoSidebar.Footer />
