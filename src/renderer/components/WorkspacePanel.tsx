@@ -1,9 +1,6 @@
 import React, { createContext, useContext, useState } from 'react';
-import type {
-  WorkspaceData,
-  SessionData,
-  Message,
-} from '../client/types/entities';
+import type { WorkspaceData, SessionData } from '../client/types/entities';
+import type { NormalizedMessage } from '../client/types/message';
 import { Button } from '@/components/ui/button';
 import {
   Empty,
@@ -20,7 +17,7 @@ interface WorkspaceContextType {
   allSessions: SessionData[];
   activeSessionId: string | null;
   setActiveSessionId: (id: string) => void;
-  messages: Message[];
+  messages: NormalizedMessage[];
   inputValue: string;
   isLoading: boolean;
   sendMessage: (content: string) => Promise<void>;
@@ -51,7 +48,7 @@ export const WorkspacePanel = ({
   workspace: WorkspaceData | null;
   emptyStateType: 'no-repos' | 'no-workspace' | null;
   onSendMessage: (sessionId: string, content: string) => Promise<void>;
-  messages: Message[];
+  messages: NormalizedMessage[];
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -316,7 +313,11 @@ WorkspacePanel.Messages = function Messages() {
   );
 };
 
-WorkspacePanel.Message = function Message({ message }: { message: Message }) {
+WorkspacePanel.Message = function Message({
+  message,
+}: {
+  message: NormalizedMessage;
+}) {
   const isUser = message.role === 'user';
 
   return (

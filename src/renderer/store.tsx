@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { WebSocketTransport } from './client/transport/WebSocketTransport';
 import { MessageBus } from './client/messaging/MessageBus';
 import { randomUUID } from './utils/uuid';
-import type { RepoData, WorkspaceData, Message } from './client/types/entities';
+import type { RepoData, WorkspaceData } from './client/types/entities';
+import type { NormalizedMessage } from './client/types/message';
 
 interface StoreState {
   // WebSocket connection state
@@ -14,7 +15,7 @@ interface StoreState {
   // Entity data
   repos: Record<string, RepoData>;
   workspaces: Record<string, WorkspaceData>;
-  messages: Message[];
+  messages: NormalizedMessage[];
 
   // Processing state
   status: 'idle' | 'processing';
@@ -49,8 +50,8 @@ interface StoreActions {
 
   // Sessions
   // Sessions
-  addMessage: (message: Omit<Message, 'id'>) => void;
-  setMessages: (messages: Message[]) => void;
+  addMessage: (message: NormalizedMessage) => void;
+  setMessages: (messages: NormalizedMessage[]) => void;
 
   // UI Selections
   selectRepo: (path: string | null) => void;
@@ -412,13 +413,13 @@ const useStore = create<Store>()((set, get) => ({
 
   // Sessions
   // Sessions
-  addMessage: (message: Message) => {
+  addMessage: (message: NormalizedMessage) => {
     set((state) => ({
       messages: [...state.messages, message],
     }));
   },
 
-  setMessages: (messages: Message[]) => {
+  setMessages: (messages: NormalizedMessage[]) => {
     set({ messages });
   },
 

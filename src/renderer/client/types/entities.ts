@@ -1,9 +1,4 @@
-export interface Message {
-  uuid: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: number;
-}
+import type { NormalizedMessage } from './message';
 
 export interface RepoData {
   path: string;
@@ -46,7 +41,7 @@ export interface WorkspaceData {
 export interface SessionData {
   id: string;
   workspaceId: string;
-  messages: Message[];
+  messages: NormalizedMessage[];
   context: {
     files: string[];
     codeRefs: Array<{ file: string; line?: number }>;

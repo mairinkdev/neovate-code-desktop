@@ -2,37 +2,51 @@ import type {
   RepoData,
   WorkspaceData,
   SessionData,
-  Message,
 } from './client/types/entities';
+import type { NormalizedMessage } from './client/types/message';
 
 // Mock messages
-const mockMessages: Message[] = [
+const mockMessages: NormalizedMessage[] = [
   {
-    id: 'msg-1',
+    type: 'message',
+    uuid: 'msg-1',
+    parentUuid: null,
     role: 'user',
     content: 'Can you help me refactor this component?',
-    timestamp: Date.now() - 3600000, // 1 hour ago
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
   },
   {
-    id: 'msg-2',
+    type: 'message',
+    uuid: 'msg-2',
+    parentUuid: 'msg-1',
     role: 'assistant',
     content:
       'Sure! I can see that this component could benefit from breaking down into smaller parts. Let me show you how.',
-    timestamp: Date.now() - 3500000, // 58 minutes ago
+    text: 'Sure! I can see that this component could benefit from breaking down into smaller parts. Let me show you how.',
+    model: 'claude-3-5-sonnet',
+    usage: { inputTokens: 100, outputTokens: 50, totalTokens: 150 },
+    timestamp: new Date(Date.now() - 3500000).toISOString(),
   },
   {
-    id: 'msg-3',
+    type: 'message',
+    uuid: 'msg-3',
+    parentUuid: 'msg-2',
     role: 'user',
     content:
       'That makes sense. How would you structure the smaller components?',
-    timestamp: Date.now() - 3400000, // 57 minutes ago
+    timestamp: new Date(Date.now() - 3400000).toISOString(),
   },
   {
-    id: 'msg-4',
+    type: 'message',
+    uuid: 'msg-4',
+    parentUuid: 'msg-3',
     role: 'assistant',
     content:
       'I would create separate components for the header, the file list, and the action buttons. This way each component has a single responsibility.',
-    timestamp: Date.now() - 3300000, // 55 minutes ago
+    text: 'I would create separate components for the header, the file list, and the action buttons. This way each component has a single responsibility.',
+    model: 'claude-3-5-sonnet',
+    usage: { inputTokens: 150, outputTokens: 80, totalTokens: 230 },
+    timestamp: new Date(Date.now() - 3300000).toISOString(),
   },
 ];
 
@@ -66,17 +80,24 @@ const mockSessions: Record<string, SessionData> = {
     workspaceId: 'workspace-1',
     messages: [
       {
-        id: 'msg-5',
+        type: 'message',
+        uuid: 'msg-5',
+        parentUuid: null,
         role: 'user',
         content: 'How do I implement the authentication flow?',
-        timestamp: Date.now() - 7200000, // 2 hours ago
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
       },
       {
-        id: 'msg-6',
+        type: 'message',
+        uuid: 'msg-6',
+        parentUuid: 'msg-5',
         role: 'assistant',
         content:
           "You can use the existing auth service. Here's an example of how to integrate it:",
-        timestamp: Date.now() - 7100000, // 1 hour 58 minutes ago
+        text: "You can use the existing auth service. Here's an example of how to integrate it:",
+        model: 'claude-3-5-sonnet',
+        usage: { inputTokens: 80, outputTokens: 60, totalTokens: 140 },
+        timestamp: new Date(Date.now() - 7100000).toISOString(),
       },
     ],
     context: {
@@ -100,10 +121,12 @@ const mockSessions: Record<string, SessionData> = {
     workspaceId: 'workspace-2',
     messages: [
       {
-        id: 'msg-7',
+        type: 'message',
+        uuid: 'msg-7',
+        parentUuid: null,
         role: 'user',
         content: "What's the status of the API integration?",
-        timestamp: Date.now() - 10800000, // 3 hours ago
+        timestamp: new Date(Date.now() - 10800000).toISOString(),
       },
     ],
     context: {
