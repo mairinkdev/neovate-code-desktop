@@ -211,10 +211,10 @@ WorkspacePanel.SessionTabs = function SessionTabs() {
     >
       {allSessions.map((session) => (
         <WorkspacePanel.SessionTab
-          key={session.id}
+          key={session.sessionId}
           session={session}
-          isActive={session.id === activeSessionId}
-          onClick={() => setActiveSessionId(session.id)}
+          isActive={session.sessionId === activeSessionId}
+          onClick={() => setActiveSessionId(session.sessionId)}
         />
       ))}
     </div>
@@ -240,7 +240,7 @@ WorkspacePanel.SessionTab = function SessionTab({
       }
       onClick={onClick}
     >
-      Session {session.id.substring(0, 8)}
+      {session.sessionId.substring(0, 8)}
     </div>
   );
 };

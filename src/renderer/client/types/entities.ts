@@ -39,22 +39,9 @@ export interface WorkspaceData {
 }
 
 export interface SessionData {
-  id: string;
-  workspaceId: string;
-  messages: NormalizedMessage[];
-  context: {
-    files: string[];
-    codeRefs: Array<{ file: string; line?: number }>;
-  };
-  state: {
-    pendingOperations: string[];
-    activeTasks: string[];
-  };
-  metadata: {
-    createdAt: number;
-    updatedAt: number;
-    status: 'active' | 'completed' | 'archived';
-    tags: string[];
-    labels: string[];
-  };
+  sessionId: string;
+  modified: number;
+  created: number;
+  messageCount: number;
+  summary: string;
 }
