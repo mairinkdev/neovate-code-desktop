@@ -16,7 +16,6 @@ function App() {
     selectRepo,
     selectWorkspace,
     sendMessage,
-    messages,
   } = useStore();
 
   // Get the selected workspace
@@ -24,7 +23,7 @@ function App() {
     ? workspaces[selectedWorkspaceId]
     : null;
 
-  const handleSendMessage = async (sessionId: string, content: string) => {
+  const handleSendMessage = async (_sessionId: string, content: string) => {
     await sendMessage({ message: content });
   };
 
@@ -57,7 +56,6 @@ function App() {
         selectedRepoPath={selectedRepoPath}
         selectedWorkspaceId={selectedWorkspaceId}
         selectedWorkspace={selectedWorkspace}
-        messages={messages}
         onSelectRepo={selectRepo}
         onSelectWorkspace={selectWorkspace}
         onSendMessage={handleSendMessage}

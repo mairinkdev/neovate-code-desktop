@@ -20,7 +20,7 @@ interface StoreState {
   repos: Record<string, RepoData>;
   workspaces: Record<string, WorkspaceData>;
   sessions: Record<string, SessionData[]>;
-  messages: NormalizedMessage[];
+  messages: Record<string, NormalizedMessage[]>;
 
   // Processing state
   status: 'idle' | 'processing';
@@ -55,8 +55,8 @@ interface StoreActions {
 
   // Sessions
   setSessions: (workspaceId: string, sessions: SessionData[]) => void;
-  addMessage: (message: NormalizedMessage) => void;
-  setMessages: (messages: NormalizedMessage[]) => void;
+  addMessage: (sessionId: string, message: NormalizedMessage) => void;
+  setMessages: (sessionId: string, messages: NormalizedMessage[]) => void;
 
   // UI Selections
   selectRepo: (path: string | null) => void;
@@ -77,7 +77,7 @@ const useStore = create<Store>()((set, get) => ({
   repos: {},
   workspaces: {},
   sessions: {},
-  messages: [],
+  messages: {},
 
   // Initial processing state
   status: 'idle',
@@ -184,8 +184,8 @@ const useStore = create<Store>()((set, get) => ({
 
     onEvent('message', (data: any) => {
       console.log('message', data);
-      if (data.message) {
-        addMessage(data.message);
+      if (data.message && data.sessionId) {
+        addMessage(data.sessionId, data.message);
       }
     });
 
@@ -426,14 +426,22 @@ const useStore = create<Store>()((set, get) => ({
     }));
   },
 
-  addMessage: (message: NormalizedMessage) => {
+  addMessage: (sessionId: string, message: NormalizedMessage) => {
     set((state) => ({
-      messages: [...state.messages, message],
+      messages: {
+        ...state.messages,
+        [sessionId]: [...(state.messages[sessionId] || []), message],
+      },
     }));
   },
 
-  setMessages: (messages: NormalizedMessage[]) => {
-    set({ messages });
+  setMessages: (sessionId: string, messages: NormalizedMessage[]) => {
+    set((state) => ({
+      messages: {
+        ...state.messages,
+        [sessionId]: messages,
+      },
+    }));
   },
 
   // UI Selections

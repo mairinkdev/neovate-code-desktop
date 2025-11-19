@@ -3,14 +3,12 @@ import { WorkspacePanel } from './WorkspacePanel';
 // import { WorkspaceChanges } from './WorkspaceChanges';
 // import { Terminal } from './Terminal';
 import TestComponent from '../TestComponent';
-import type { NormalizedMessage } from '../client/types/message';
 import type { RepoData, WorkspaceData } from '../client/types/entities';
 
 export const MainLayout = ({
   repos,
   selectedRepoPath,
   selectedWorkspaceId,
-  messages,
   selectedWorkspace,
   onSelectRepo,
   onSelectWorkspace,
@@ -21,7 +19,6 @@ export const MainLayout = ({
   selectedRepoPath: string | null;
   selectedWorkspaceId: string | null;
   selectedWorkspace: WorkspaceData | null;
-  messages: NormalizedMessage[];
   onSelectRepo: (path: string | null) => void;
   onSelectWorkspace: (id: string | null) => void;
   onSendMessage: (sessionId: string, content: string) => Promise<void>;
@@ -53,7 +50,6 @@ export const MainLayout = ({
             workspace={selectedWorkspace}
             emptyStateType={emptyStateType}
             onSendMessage={onSendMessage}
-            messages={messages}
           />
         </div>
 

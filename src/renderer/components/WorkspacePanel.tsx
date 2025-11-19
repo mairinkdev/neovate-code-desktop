@@ -16,8 +16,8 @@ interface WorkspaceContextType {
   workspace: WorkspaceData;
   activeSession: SessionData | null;
   allSessions: SessionData[];
-  activeSessionId: string | null;
-  setActiveSessionId: (id: string) => void;
+  selectedSessionId: string | null;
+  selectSession: (id: string) => void;
   messages: NormalizedMessage[];
   inputValue: string;
   isLoading: boolean;
@@ -44,43 +44,49 @@ export const WorkspacePanel = ({
   workspace,
   emptyStateType,
   onSendMessage,
-  messages,
 }: {
   workspace: WorkspaceData | null;
   emptyStateType: 'no-repos' | 'no-workspace' | null;
   onSendMessage: (sessionId: string, content: string) => Promise<void>;
-  messages: NormalizedMessage[];
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
 
   // Get store actions and state
   const request = useStore((state) => state.request);
   const setSessions = useStore((state) => state.setSessions);
+  const setMessages = useStore((state) => state.setMessages);
   const selectedWorkspaceId = useStore((state) => state.selectedWorkspaceId);
+  const selectedSessionId = useStore((state) => state.selectedSessionId);
+  const selectSession = useStore((state) => state.selectSession);
   const workspaces = useStore((state) => state.workspaces);
   const sessionsMap = useStore((state) => state.sessions);
+  const messagesMap = useStore((state) => state.messages);
 
-  // Get sessions for the current workspace from store - memoized to avoid infinite loop
+  // Get sessions and messages for the current workspace from store - memoized to avoid infinite loop
   const allSessions = useMemo(
     () => (selectedWorkspaceId ? sessionsMap[selectedWorkspaceId] || [] : []),
     [selectedWorkspaceId, sessionsMap],
   );
 
+  const messages = useMemo(
+    () => (selectedSessionId ? messagesMap[selectedSessionId] || [] : []),
+    [selectedSessionId, messagesMap],
+  );
+
   const activeSession =
-    allSessions.find((s) => s.sessionId === activeSessionId) || null;
+    allSessions.find((s) => s.sessionId === selectedSessionId) || null;
 
   // Fetch sessions when selectedWorkspaceId changes
   useEffect(() => {
     if (!selectedWorkspaceId) {
-      setActiveSessionId(null);
+      selectSession(null);
       return;
     }
 
     const workspace = workspaces[selectedWorkspaceId];
     if (!workspace) {
-      setActiveSessionId(null);
+      selectSession(null);
       return;
     }
 
@@ -101,32 +107,65 @@ export const WorkspacePanel = ({
     };
 
     fetchSessions();
-  }, [selectedWorkspaceId, workspaces, request, setSessions]);
+  }, [selectedWorkspaceId, workspaces, request, setSessions, selectSession]);
 
-  // Validate activeSessionId when sessions load
+  // Validate selectedSessionId when sessions load
   useEffect(() => {
     if (allSessions.length > 0) {
-      // If no active session or it doesn't exist in the list, set to first session
+      // If no selected session or it doesn't exist in the list, set to first session
       if (
-        !activeSessionId ||
-        !allSessions.find((s) => s.sessionId === activeSessionId)
+        !selectedSessionId ||
+        !allSessions.find((s) => s.sessionId === selectedSessionId)
       ) {
-        setActiveSessionId(allSessions[0].sessionId);
+        selectSession(allSessions[0].sessionId);
       }
     } else {
-      // No sessions, reset activeSessionId
-      if (activeSessionId !== null) {
-        setActiveSessionId(null);
+      // No sessions, reset selectedSessionId
+      if (selectedSessionId !== null) {
+        selectSession(null);
       }
     }
-  }, [allSessions, activeSessionId]);
+  }, [allSessions, selectedSessionId, selectSession]);
+
+  // Fetch messages when selectedSessionId changes
+  useEffect(() => {
+    if (!selectedSessionId || !selectedWorkspaceId) return;
+
+    const workspace = workspaces[selectedWorkspaceId];
+    if (!workspace) return;
+
+    const fetchMessages = async () => {
+      try {
+        const response = await request<
+          { cwd: string; sessionId: string },
+          { success: boolean; data: { messages: NormalizedMessage[] } }
+        >('session.messages.list', {
+          cwd: workspace.worktreePath,
+          sessionId: selectedSessionId,
+        });
+        if (response.success) {
+          setMessages(selectedSessionId, response.data.messages);
+        }
+      } catch (error) {
+        console.error('Failed to fetch messages:', error);
+      }
+    };
+
+    fetchMessages();
+  }, [
+    selectedSessionId,
+    selectedWorkspaceId,
+    workspaces,
+    request,
+    setMessages,
+  ]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
 
     setIsLoading(true);
     try {
-      await onSendMessage(activeSessionId || '', content);
+      await onSendMessage(selectedSessionId || '', content);
       setInputValue('');
     } finally {
       setIsLoading(false);
@@ -134,8 +173,8 @@ export const WorkspacePanel = ({
   };
 
   // Handle session switching - reset input
-  const handleSetActiveSessionId = (id: string) => {
-    setActiveSessionId(id);
+  const handleSelectSession = (id: string) => {
+    selectSession(id);
     setInputValue('');
   };
 
@@ -167,8 +206,8 @@ export const WorkspacePanel = ({
     workspace,
     activeSession,
     allSessions,
-    activeSessionId,
-    setActiveSessionId: handleSetActiveSessionId,
+    selectedSessionId,
+    selectSession: handleSelectSession,
     messages,
     inputValue,
     isLoading,
@@ -222,7 +261,7 @@ WorkspacePanel.Header = function Header() {
 };
 
 WorkspacePanel.SessionTabs = function SessionTabs() {
-  const { allSessions, activeSessionId, setActiveSessionId } =
+  const { allSessions, selectedSessionId, selectSession } =
     useWorkspaceContext();
 
   if (allSessions.length === 0) {
@@ -253,8 +292,8 @@ WorkspacePanel.SessionTabs = function SessionTabs() {
         <WorkspacePanel.SessionTab
           key={session.sessionId}
           session={session}
-          isActive={session.sessionId === activeSessionId}
-          onClick={() => setActiveSessionId(session.sessionId)}
+          isActive={session.sessionId === selectedSessionId}
+          onClick={() => selectSession(session.sessionId)}
         />
       ))}
     </div>
@@ -396,8 +435,13 @@ WorkspacePanel.Message = function Message({
 };
 
 WorkspacePanel.ChatInput = function ChatInput() {
-  const { inputValue, setInputValue, sendMessage, isLoading, activeSessionId } =
-    useWorkspaceContext();
+  const {
+    inputValue,
+    setInputValue,
+    sendMessage,
+    isLoading,
+    selectedSessionId,
+  } = useWorkspaceContext();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -418,7 +462,7 @@ WorkspacePanel.ChatInput = function ChatInput() {
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={
-              activeSessionId
+              selectedSessionId
                 ? 'Type your message...'
                 : 'Type your message with a new session...'
             }
@@ -439,9 +483,9 @@ WorkspacePanel.ChatInput = function ChatInput() {
 };
 
 WorkspacePanel.Toolbar = function Toolbar() {
-  const { activeSessionId } = useWorkspaceContext();
+  const { selectedSessionId } = useWorkspaceContext();
 
-  if (!activeSessionId) return null;
+  if (!selectedSessionId) return null;
 
   return (
     <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex">
