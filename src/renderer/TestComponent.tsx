@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useStore } from './store';
 import { Button } from './components/ui/button';
+import { TestMessages } from './TestMessages';
 import { TestUIComponents } from './components/TestUIComponents';
 
 const TestComponent = () => {
@@ -92,6 +93,9 @@ const TestComponent = () => {
           </div>
         </div>
       )}
+      <div style={{ marginTop: '16px' }}>
+        <TestMessages />
+      </div>
       <div style={{ marginTop: '16px' }}>
         <TestUIComponents />
       </div>
