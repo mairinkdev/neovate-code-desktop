@@ -1,7 +1,11 @@
-import React from 'react';
+import { useEffect } from 'react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowDownIcon } from '@hugeicons/core-free-icons';
 import { Button } from '../ui/button';
+import { useStore } from '../../store';
+import { Spinner } from '../ui/spinner';
+
+type ThemeValue = 'light' | 'dark' | 'system';
 
 interface SettingsRowProps {
   title: string;
@@ -38,9 +42,15 @@ interface ThemeOptionProps {
   label: string;
   isActive: boolean;
   onClick: () => void;
+  disabled?: boolean;
 }
 
-const ThemeOption = ({ label, isActive, onClick }: ThemeOptionProps) => {
+const ThemeOption = ({
+  label,
+  isActive,
+  onClick,
+  disabled,
+}: ThemeOptionProps) => {
   return (
     <button
       className="px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
@@ -50,15 +60,18 @@ const ThemeOption = ({ label, isActive, onClick }: ThemeOptionProps) => {
         border: isActive
           ? '1px solid var(--border-subtle)'
           : '1px solid transparent',
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
       }}
       onClick={onClick}
+      disabled={disabled}
       onMouseEnter={(e) => {
-        if (!isActive) {
+        if (!isActive && !disabled) {
           e.currentTarget.style.backgroundColor = 'var(--bg-base-hover)';
         }
       }}
       onMouseLeave={(e) => {
-        if (!isActive) {
+        if (!isActive && !disabled) {
           e.currentTarget.style.backgroundColor = 'transparent';
         }
       }}
@@ -69,10 +82,26 @@ const ThemeOption = ({ label, isActive, onClick }: ThemeOptionProps) => {
 };
 
 export const PreferencesPanel = () => {
-  // Theme state - placeholder, will be implemented later
-  const [theme, setTheme] = React.useState<'light' | 'dark' | 'system'>(
-    'light',
-  );
+  const globalConfig = useStore((state) => state.globalConfig);
+  const isConfigLoading = useStore((state) => state.isConfigLoading);
+  const isConfigSaving = useStore((state) => state.isConfigSaving);
+  const loadGlobalConfig = useStore((state) => state.loadGlobalConfig);
+  const getGlobalConfigValue = useStore((state) => state.getGlobalConfigValue);
+  const setGlobalConfig = useStore((state) => state.setGlobalConfig);
+
+  // Load config on mount if not already loaded
+  useEffect(() => {
+    if (globalConfig === null) {
+      loadGlobalConfig();
+    }
+  }, [globalConfig, loadGlobalConfig]);
+
+  const theme = getGlobalConfigValue<ThemeValue>('desktop.theme', 'system');
+
+  const handleThemeChange = async (newTheme: ThemeValue) => {
+    if (newTheme === theme || isConfigSaving) return;
+    await setGlobalConfig('desktop.theme', newTheme);
+  };
 
   const handleSendFeedback = () => {
     // Placeholder - will be implemented later
@@ -83,6 +112,14 @@ export const PreferencesPanel = () => {
     // Placeholder - will be implemented later
     console.log('Check for updates clicked');
   };
+
+  if (isConfigLoading || globalConfig === null) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Spinner className="h-6 w-6" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -106,17 +143,20 @@ export const PreferencesPanel = () => {
             <ThemeOption
               label="Light"
               isActive={theme === 'light'}
-              onClick={() => setTheme('light')}
+              onClick={() => handleThemeChange('light')}
+              disabled={isConfigSaving}
             />
             <ThemeOption
               label="Dark"
               isActive={theme === 'dark'}
-              onClick={() => setTheme('dark')}
+              onClick={() => handleThemeChange('dark')}
+              disabled={isConfigSaving}
             />
             <ThemeOption
               label="System"
               isActive={theme === 'system'}
-              onClick={() => setTheme('system')}
+              onClick={() => handleThemeChange('system')}
+              disabled={isConfigSaving}
             />
           </div>
         </SettingsRow>

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { WebSocketTransport } from './client/transport/WebSocketTransport';
 import { MessageBus } from './client/messaging/MessageBus';
 import { randomUUID } from './utils/uuid';
+import { getNestedValue, setNestedValue } from './lib/utils';
 import type {
   RepoData,
   WorkspaceData,
@@ -42,6 +43,11 @@ interface StoreState {
   selectedWorkspaceId: WorkspaceId | null;
   selectedSessionId: SessionId | null;
   showSettings: boolean;
+
+  // Config state
+  globalConfig: Record<string, any> | null;
+  isConfigLoading: boolean;
+  isConfigSaving: boolean;
 }
 
 interface StoreActions {
@@ -83,6 +89,11 @@ interface StoreActions {
   selectWorkspace: (id: string | null) => void;
   selectSession: (id: string | null) => void;
   setShowSettings: (show: boolean) => void;
+
+  // Config actions
+  loadGlobalConfig: () => Promise<void>;
+  getGlobalConfigValue: <T>(key: string, defaultValue?: T) => T | undefined;
+  setGlobalConfig: (key: string, value: any) => Promise<boolean>;
 }
 
 type Store = StoreState & StoreActions;
@@ -110,6 +121,11 @@ const useStore = create<Store>()((set, get) => ({
   selectedWorkspaceId: null,
   selectedSessionId: null,
   showSettings: false,
+
+  // Initial config state
+  globalConfig: null,
+  isConfigLoading: false,
+  isConfigSaving: false,
 
   connect: async () => {
     const { transport } = get();
@@ -589,6 +605,86 @@ const useStore = create<Store>()((set, get) => ({
     set(() => ({
       showSettings: show,
     }));
+  },
+
+  // Config actions
+  loadGlobalConfig: async () => {
+    const { globalConfig, isConfigLoading } = get();
+
+    // Skip if already loading or already loaded
+    if (isConfigLoading || globalConfig !== null) {
+      return;
+    }
+
+    set({ isConfigLoading: true });
+
+    try {
+      const { request } = get();
+      const response = await request('config.list', { cwd: '/tmp' });
+
+      if (response.success && response.data?.config) {
+        set({ globalConfig: response.data.config as Record<string, any> });
+      } else {
+        // Set to empty object if no config exists
+        set({ globalConfig: {} });
+      }
+    } catch (error) {
+      console.error('Failed to load global config:', error);
+      set({ globalConfig: {} });
+    } finally {
+      set({ isConfigLoading: false });
+    }
+  },
+
+  getGlobalConfigValue: <T,>(key: string, defaultValue?: T): T | undefined => {
+    const { globalConfig } = get();
+    return getNestedValue<T>(globalConfig, key, defaultValue);
+  },
+
+  setGlobalConfig: async (key: string, value: any): Promise<boolean> => {
+    const { globalConfig, isConfigSaving, request } = get();
+
+    if (isConfigSaving) {
+      return false;
+    }
+
+    // Store previous value for rollback
+    const previousConfig = globalConfig ? { ...globalConfig } : null;
+
+    // Optimistic update
+    const newConfig = globalConfig
+      ? setNestedValue(globalConfig, key, value)
+      : setNestedValue({}, key, value);
+
+    set({
+      globalConfig: newConfig,
+      isConfigSaving: true,
+    });
+
+    try {
+      const response = await request('config.set', {
+        cwd: '/tmp',
+        isGlobal: true,
+        key,
+        value,
+      });
+
+      if (!response.success) {
+        // Rollback on failure
+        set({ globalConfig: previousConfig });
+        console.error('Failed to save config:', response);
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      // Rollback on error
+      set({ globalConfig: previousConfig });
+      console.error('Failed to save config:', error);
+      return false;
+    } finally {
+      set({ isConfigSaving: false });
+    }
   },
 }));
 
