@@ -251,6 +251,7 @@ export const WorkspacePanel = ({
                 ? 'Ask anything, @ for context'
                 : 'Ask anything, @ for context with a new session...'
             }
+            modelName={workspace.context.settings?.model}
             disabled={isLoading}
           />
         </div>

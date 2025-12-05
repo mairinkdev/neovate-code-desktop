@@ -198,6 +198,9 @@ export function ChatInput({
                       type="button"
                       className="flex items-center gap-1.5 px-2 py-1 rounded text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/5"
                       style={{ color: 'var(--text-secondary)' }}
+                      onClick={() => {
+                        alert('Not implemented yet');
+                      }}
                     >
                       <HugeiconsIcon icon={ChipIcon} size={14} />
                       <span className="font-medium max-w-[120px] truncate">
