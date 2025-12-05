@@ -6,157 +6,143 @@ import type { NormalizedMessage } from './client/types/message';
 let uuidCounter = 0;
 const generateUuid = () => `test-uuid-${++uuidCounter}`;
 
-// Generate sample messages for different scenarios
-const createTestMessages = (): NormalizedMessage[] => {
+// ========================================
+// LOOP 1: Simple Ping-Pong
+// ========================================
+const createPingPongMessages = (): NormalizedMessage[] => {
   const messages: NormalizedMessage[] = [];
 
-  // 1. Simple user message
+  // User: ping
   messages.push({
     type: 'message',
     role: 'user',
-    content: 'Hello, can you help me with some code?',
+    content: 'ping',
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
     parentUuid: null,
   });
 
-  // 2. Simple assistant message with text
+  // Assistant: ping
   messages.push({
     type: 'message',
     role: 'assistant',
     content: [
       {
         type: 'text',
-        text: "Of course! I'd be happy to help you with your code. What would you like to work on?",
+        text: 'ping',
       },
     ],
-    text: "Of course! I'd be happy to help you with your code. What would you like to work on?",
+    text: 'ping',
     model: 'claude-3-sonnet',
     usage: {
-      inputTokens: 100,
-      outputTokens: 50,
-      totalTokens: 150,
+      inputTokens: 10,
+      outputTokens: 5,
+      totalTokens: 15,
     },
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
     parentUuid: null,
   });
 
-  // 3. User message with multi-line text
+  return messages;
+};
+
+// ========================================
+// LOOP 2: Comprehensive Agent Call Demo
+// All types of assistant messages and tool calls
+// ========================================
+const createComprehensiveMessages = (): NormalizedMessage[] => {
+  const messages: NormalizedMessage[] = [];
+
+  // Long user request
   messages.push({
     type: 'message',
     role: 'user',
-    content: `I have a React component that needs refactoring.
+    content: `I need your help with a comprehensive project setup. Here's what I need:
 
-Here's the code:
-\`\`\`tsx
-const MyComponent = () => {
-  return <div>Hello World</div>;
-};
-\`\`\`
+1. **Create a new React project** with TypeScript support
+2. **Set up the folder structure** with proper organization
+3. **Install dependencies** including testing libraries
+4. **Create configuration files** for ESLint, Prettier, and TypeScript
+5. **Write sample components** to demonstrate best practices
+6. **Set up a todo tracking system** to manage project tasks
+7. **Fetch external documentation** from the React website
+8. **Search through existing code** for patterns to follow
 
-Can you improve it?`,
+Please help me accomplish all of these tasks. I want you to demonstrate your full capabilities with file operations, bash commands, search functionality, and task management.`,
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
     parentUuid: null,
   });
 
-  // 4. Assistant message with markdown
-  messages.push({
-    type: 'message',
-    role: 'assistant',
-    content: [
-      {
-        type: 'text',
-        text: `Here's an improved version of your component:
-
-## Changes Made
-
-1. **Added TypeScript types** for better type safety
-2. **Added props interface** for extensibility
-3. **Improved styling** with Tailwind classes
-
-\`\`\`tsx
-interface MyComponentProps {
-  name?: string;
-  className?: string;
-}
-
-const MyComponent: React.FC<MyComponentProps> = ({ 
-  name = 'World',
-  className = ''
-}) => {
-  return (
-    <div className={\`text-lg font-semibold \${className}\`}>
-      Hello {name}
-    </div>
-  );
-};
-\`\`\`
-
-This version is more **reusable** and **maintainable**.`,
-      },
-    ],
-    text: 'Here is an improved version...',
-    model: 'claude-3-opus',
-    usage: {
-      inputTokens: 200,
-      outputTokens: 300,
-      totalTokens: 500,
-    },
-    timestamp: new Date().toISOString(),
-    uuid: generateUuid(),
-    parentUuid: null,
-  });
-
-  // 5. Assistant message with reasoning (thinking)
+  // Assistant message with reasoning/thinking
   messages.push({
     type: 'message',
     role: 'assistant',
     content: [
       {
         type: 'reasoning',
-        text: "Let me think about the best approach here... The user wants to improve performance, so I should consider memoization, lazy loading, and code splitting. I'll focus on the most impactful changes first.",
+        text: `Let me analyze this comprehensive request step by step:
+
+1. First, I need to understand the project structure the user wants
+2. I should list the current directory to see what exists
+3. Then search for any existing configuration patterns
+4. Set up a todo list to track all the tasks
+5. Create files, execute commands, and fetch documentation
+6. Finally, demonstrate all tool types available
+
+I'll start with the simpler operations and work up to more complex ones. This will showcase:
+- read, write, edit operations
+- bash, bash_output, kill_bash for command execution
+- glob, grep, ls for file/directory operations
+- todoRead, todoWrite for task management
+- fetch for external resources
+- AskUserQuestion for interactive decisions`,
       },
       {
         type: 'text',
-        text: 'Based on my analysis, here are the key optimizations I recommend:\n\n1. Use `React.memo()` for pure components\n2. Implement `useMemo` for expensive calculations\n3. Consider code splitting with `React.lazy()`',
+        text: `I'd be happy to help you set up this comprehensive project! Let me walk you through all the steps and demonstrate various capabilities along the way.
+
+## Starting with Project Analysis
+
+First, let me check the current directory structure and set up a task tracking system.`,
       },
     ],
-    text: 'Based on my analysis...',
+    text: "I'd be happy to help you set up this comprehensive project!",
     model: 'claude-3-sonnet',
     usage: {
-      inputTokens: 150,
-      outputTokens: 200,
-      totalTokens: 350,
+      inputTokens: 500,
+      outputTokens: 350,
+      totalTokens: 850,
     },
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
     parentUuid: null,
   });
 
-  // 6. Assistant message with tool use (pending - no result yet)
-  const toolUseId1 = generateUuid();
+  // 1. ls tool - List directory
+  const lsToolId = generateUuid();
+  const lsAssistantUuid = generateUuid();
   messages.push({
     type: 'message',
     role: 'assistant',
     content: [
       {
         type: 'text',
-        text: "I'll read the file to understand the current implementation.",
+        text: "Let me check what's in the current directory:",
       },
       {
         type: 'tool_use',
-        id: toolUseId1,
-        name: 'Read',
+        id: lsToolId,
+        name: 'ls',
         input: {
-          path: '/path/to/file.tsx',
+          dir_path: '/project',
         },
-        displayName: 'Read File',
-        description: 'Reading /path/to/file.tsx',
+        displayName: 'List Directory',
+        description: 'Listing contents of /project',
       },
     ],
-    text: "I'll read the file...",
+    text: "Let me check what's in the current directory:",
     model: 'claude-3-sonnet',
     usage: {
       inputTokens: 100,
@@ -164,153 +150,102 @@ This version is more **reusable** and **maintainable**.`,
       totalTokens: 180,
     },
     timestamp: new Date().toISOString(),
-    uuid: generateUuid(),
+    uuid: lsAssistantUuid,
     parentUuid: null,
   });
 
-  // 7. Assistant message with tool use (completed with result)
-  const toolUseId2 = generateUuid();
-  const assistantMsgUuid = generateUuid();
-  messages.push({
-    type: 'message',
-    role: 'assistant',
-    content: [
-      {
-        type: 'text',
-        text: 'Let me check the package.json file.',
-      },
-      {
-        type: 'tool_use',
-        id: toolUseId2,
-        name: 'Read',
-        input: {
-          path: '/project/package.json',
-        },
-        displayName: 'Read File',
-        description: 'Reading /project/package.json',
-      },
-    ],
-    text: 'Let me check the package.json...',
-    model: 'claude-3-sonnet',
-    usage: {
-      inputTokens: 100,
-      outputTokens: 80,
-      totalTokens: 180,
-    },
-    timestamp: new Date().toISOString(),
-    uuid: assistantMsgUuid,
-    parentUuid: null,
-  });
-
-  // Tool result message (follows the assistant message)
   messages.push({
     type: 'message',
     role: 'user',
     content: [
       {
         type: 'tool_result',
-        id: toolUseId2,
-        name: 'Read',
-        input: {
-          path: '/project/package.json',
-        },
+        id: lsToolId,
+        name: 'ls',
+        input: { dir_path: '/project' },
         result: {
-          llmContent:
-            '{\n  "name": "my-project",\n  "version": "1.0.0",\n  "dependencies": {\n    "react": "^18.2.0"\n  }\n}',
-          returnDisplay:
-            '{\n  "name": "my-project",\n  "version": "1.0.0",\n  "dependencies": {\n    "react": "^18.2.0"\n  }\n}',
+          llmContent: `📂 /project
+├── 📁 src/
+├── 📁 node_modules/
+├── 📄 package.json
+├── 📄 tsconfig.json
+├── 📄 README.md
+└── 📄 .gitignore`,
+          returnDisplay: `📂 /project
+├── 📁 src/
+├── 📁 node_modules/
+├── 📄 package.json
+├── 📄 tsconfig.json
+├── 📄 README.md
+└── 📄 .gitignore`,
         },
       },
     ],
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
-    parentUuid: assistantMsgUuid,
+    parentUuid: lsAssistantUuid,
   });
 
-  // 8. Assistant message with tool use (error result)
-  const toolUseId3 = generateUuid();
-  const assistantMsgUuid2 = generateUuid();
+  // 2. todoWrite tool - Create task list
+  const todoWriteToolId = generateUuid();
+  const todoWriteAssistantUuid = generateUuid();
   messages.push({
     type: 'message',
     role: 'assistant',
     content: [
       {
         type: 'text',
-        text: "I'll try to read the config file.",
+        text: 'Now let me set up our task tracking system to manage all the work we need to do:',
       },
       {
         type: 'tool_use',
-        id: toolUseId3,
-        name: 'Read',
+        id: todoWriteToolId,
+        name: 'todoWrite',
         input: {
-          path: '/project/nonexistent.config',
+          todos: [
+            {
+              id: '1',
+              content: 'Set up folder structure',
+              status: 'pending',
+              priority: 'high',
+            },
+            {
+              id: '2',
+              content: 'Install dependencies',
+              status: 'pending',
+              priority: 'high',
+            },
+            {
+              id: '3',
+              content: 'Create configuration files',
+              status: 'pending',
+              priority: 'medium',
+            },
+            {
+              id: '4',
+              content: 'Write sample components',
+              status: 'pending',
+              priority: 'medium',
+            },
+            {
+              id: '5',
+              content: 'Fetch documentation',
+              status: 'pending',
+              priority: 'low',
+            },
+            {
+              id: '6',
+              content: 'Search existing patterns',
+              status: 'pending',
+              priority: 'low',
+            },
+          ],
         },
-        displayName: 'Read File',
-        description: 'Reading /project/nonexistent.config',
+        displayName: 'Create Todo List',
+        description: 'Setting up project task tracking',
       },
     ],
-    text: "I'll try to read...",
-    model: 'claude-3-sonnet',
-    usage: {
-      inputTokens: 100,
-      outputTokens: 80,
-      totalTokens: 180,
-    },
-    timestamp: new Date().toISOString(),
-    uuid: assistantMsgUuid2,
-    parentUuid: null,
-  });
-
-  // Tool result with error
-  messages.push({
-    type: 'message',
-    role: 'user',
-    content: [
-      {
-        type: 'tool_result',
-        id: toolUseId3,
-        name: 'Read',
-        input: {
-          path: '/project/nonexistent.config',
-        },
-        result: {
-          llmContent: 'ENOENT: no such file or directory',
-          isError: true,
-        },
-      },
-    ],
-    timestamp: new Date().toISOString(),
-    uuid: generateUuid(),
-    parentUuid: assistantMsgUuid2,
-  });
-
-  // 9. Assistant message with diff viewer result
-  const toolUseId4 = generateUuid();
-  const assistantMsgUuid3 = generateUuid();
-  messages.push({
-    type: 'message',
-    role: 'assistant',
-    content: [
-      {
-        type: 'text',
-        text: "I'll update the component to add the new feature.",
-      },
-      {
-        type: 'tool_use',
-        id: toolUseId4,
-        name: 'StrReplace',
-        input: {
-          file_path: '/project/src/Button.tsx',
-          old_string:
-            'const Button = () => {\n  return <button>Click</button>;\n};',
-          new_string:
-            'const Button = ({ onClick, children }) => {\n  return (\n    <button onClick={onClick} className="btn">\n      {children}\n    </button>\n  );\n};',
-        },
-        displayName: 'Edit File',
-        description: 'Editing /project/src/Button.tsx',
-      },
-    ],
-    text: "I'll update the component...",
+    text: 'Now let me set up our task tracking system:',
     model: 'claude-3-sonnet',
     usage: {
       inputTokens: 150,
@@ -318,98 +253,30 @@ This version is more **reusable** and **maintainable**.`,
       totalTokens: 270,
     },
     timestamp: new Date().toISOString(),
-    uuid: assistantMsgUuid3,
+    uuid: todoWriteAssistantUuid,
     parentUuid: null,
   });
 
-  // Tool result with diff viewer
   messages.push({
     type: 'message',
     role: 'user',
     content: [
       {
         type: 'tool_result',
-        id: toolUseId4,
-        name: 'StrReplace',
-        input: {
-          file_path: '/project/src/Button.tsx',
-          old_string:
-            'const Button = () => {\n  return <button>Click</button>;\n};',
-          new_string:
-            'const Button = ({ onClick, children }) => {\n  return (\n    <button onClick={onClick} className="btn">\n      {children}\n    </button>\n  );\n};',
-        },
-        result: {
-          llmContent: 'File updated successfully',
-          returnDisplay: {
-            type: 'diff_viewer',
-            diff: '- const Button = () => {\n-   return <button>Click</button>;\n- };\n+ const Button = ({ onClick, children }) => {\n+   return (\n+     <button onClick={onClick} className="btn">\n+       {children}\n+     </button>\n+   );\n+ };',
-          },
-        },
-      },
-    ],
-    timestamp: new Date().toISOString(),
-    uuid: generateUuid(),
-    parentUuid: assistantMsgUuid3,
-  });
-
-  // 10. Assistant message with todo result
-  const toolUseId5 = generateUuid();
-  const assistantMsgUuid4 = generateUuid();
-  messages.push({
-    type: 'message',
-    role: 'assistant',
-    content: [
-      {
-        type: 'text',
-        text: "Here's my task list for this feature:",
-      },
-      {
-        type: 'tool_use',
-        id: toolUseId5,
-        name: 'TodoWrite',
-        input: {
-          todos: [
-            { id: '1', text: 'Create Button component', completed: true },
-            { id: '2', text: 'Add styling', completed: true },
-            { id: '3', text: 'Write tests', completed: false },
-            { id: '4', text: 'Update documentation', completed: false },
-          ],
-        },
-        displayName: 'Update Todos',
-        description: 'Managing task list',
-      },
-    ],
-    text: 'Here is my task list...',
-    model: 'claude-3-sonnet',
-    usage: {
-      inputTokens: 100,
-      outputTokens: 100,
-      totalTokens: 200,
-    },
-    timestamp: new Date().toISOString(),
-    uuid: assistantMsgUuid4,
-    parentUuid: null,
-  });
-
-  // Tool result with todos
-  messages.push({
-    type: 'message',
-    role: 'user',
-    content: [
-      {
-        type: 'tool_result',
-        id: toolUseId5,
-        name: 'TodoWrite',
+        id: todoWriteToolId,
+        name: 'todoWrite',
         input: {},
         result: {
-          llmContent: 'Todos updated',
+          llmContent: 'Todos created successfully',
           returnDisplay: {
             type: 'todo_write',
             todos: [
-              { id: '1', text: 'Create Button component', completed: true },
-              { id: '2', text: 'Add styling', completed: true },
-              { id: '3', text: 'Write tests', completed: false },
-              { id: '4', text: 'Update documentation', completed: false },
+              { id: '1', text: 'Set up folder structure', completed: false },
+              { id: '2', text: 'Install dependencies', completed: false },
+              { id: '3', text: 'Create configuration files', completed: false },
+              { id: '4', text: 'Write sample components', completed: false },
+              { id: '5', text: 'Fetch documentation', completed: false },
+              { id: '6', text: 'Search existing patterns', completed: false },
             ],
           },
         },
@@ -417,74 +284,924 @@ This version is more **reusable** and **maintainable**.`,
     ],
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
-    parentUuid: assistantMsgUuid4,
+    parentUuid: todoWriteAssistantUuid,
   });
 
-  // 11. System message
-  messages.push({
-    type: 'message',
-    role: 'system',
-    content: 'Session context has been updated with new workspace information.',
-    timestamp: new Date().toISOString(),
-    uuid: generateUuid(),
-    parentUuid: null,
-  });
-
-  // 12. Empty assistant message
+  // 3. read tool - Read file
+  const readToolId = generateUuid();
+  const readAssistantUuid = generateUuid();
   messages.push({
     type: 'message',
     role: 'assistant',
-    content: [],
-    text: '',
+    content: [
+      {
+        type: 'text',
+        text: 'Let me read the existing package.json to understand the current project configuration:',
+      },
+      {
+        type: 'tool_use',
+        id: readToolId,
+        name: 'read',
+        input: {
+          file_path: '/project/package.json',
+          offset: null,
+          limit: null,
+        },
+        displayName: 'Read File',
+        description: 'Reading /project/package.json',
+      },
+    ],
+    text: 'Let me read the existing package.json:',
     model: 'claude-3-sonnet',
     usage: {
-      inputTokens: 50,
-      outputTokens: 0,
-      totalTokens: 50,
+      inputTokens: 100,
+      outputTokens: 80,
+      totalTokens: 180,
     },
     timestamp: new Date().toISOString(),
-    uuid: generateUuid(),
+    uuid: readAssistantUuid,
     parentUuid: null,
   });
 
-  // 13. User message with image (mock)
   messages.push({
     type: 'message',
     role: 'user',
     content: [
       {
-        type: 'text',
-        text: 'What do you see in this image?',
-      },
-      {
-        type: 'image',
-        // Small 1x1 transparent PNG as placeholder
-        data: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-        mimeType: 'image/png',
+        type: 'tool_result',
+        id: readToolId,
+        name: 'read',
+        input: { file_path: '/project/package.json' },
+        result: {
+          llmContent: `{
+  "name": "my-react-project",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0",
+    "vite": "^4.4.0"
+  }
+}`,
+          returnDisplay: `{
+  "name": "my-react-project",
+  "version": "1.0.0",
+  ...
+}`,
+        },
       },
     ],
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
+    parentUuid: readAssistantUuid,
+  });
+
+  // 4. glob tool - Find files
+  const globToolId = generateUuid();
+  const globAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Let me find all TypeScript files in the project to understand the existing code structure:',
+      },
+      {
+        type: 'tool_use',
+        id: globToolId,
+        name: 'glob',
+        input: {
+          pattern: '**/*.tsx',
+          path: '/project/src',
+        },
+        displayName: 'Find Files',
+        description: 'Searching for **/*.tsx in /project/src',
+      },
+    ],
+    text: 'Let me find all TypeScript files:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 100,
+      outputTokens: 80,
+      totalTokens: 180,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: globAssistantUuid,
     parentUuid: null,
   });
 
-  // 14. Long user message
   messages.push({
     type: 'message',
     role: 'user',
-    content: `This is a very long message to test how the UI handles extensive content. 
+    content: [
+      {
+        type: 'tool_result',
+        id: globToolId,
+        name: 'glob',
+        input: { pattern: '**/*.tsx', path: '/project/src' },
+        result: {
+          llmContent: `Found 4 files:
+- /project/src/App.tsx
+- /project/src/main.tsx
+- /project/src/components/Button.tsx
+- /project/src/components/Card.tsx`,
+          returnDisplay: `Found 4 files:
+• App.tsx
+• main.tsx
+• components/Button.tsx
+• components/Card.tsx`,
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: globAssistantUuid,
+  });
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+  // 5. grep tool - Search patterns
+  const grepToolId = generateUuid();
+  const grepAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Now let me search for existing patterns in the codebase to maintain consistency:',
+      },
+      {
+        type: 'tool_use',
+        id: grepToolId,
+        name: 'grep',
+        input: {
+          pattern: 'useState|useEffect|useMemo',
+          search_path: '/project/src',
+          include: '*.tsx',
+          limit: 20,
+        },
+        displayName: 'Search Code',
+        description: 'Searching for React hooks usage',
+      },
+    ],
+    text: 'Now let me search for existing patterns:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 100,
+      outputTokens: 80,
+      totalTokens: 180,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: grepAssistantUuid,
+    parentUuid: null,
+  });
 
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: grepToolId,
+        name: 'grep',
+        input: { pattern: 'useState|useEffect', search_path: '/project/src' },
+        result: {
+          llmContent: `App.tsx:3: import { useState, useEffect } from 'react';
+App.tsx:8: const [count, setCount] = useState(0);
+App.tsx:12: useEffect(() => {
+components/Button.tsx:2: import { useState } from 'react';
+components/Button.tsx:5: const [isHovered, setIsHovered] = useState(false);`,
+          returnDisplay: `Found 5 matches in 2 files:
+• App.tsx (3 matches)
+• components/Button.tsx (2 matches)`,
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: grepAssistantUuid,
+  });
 
-Key points to consider:
-- Point one is about performance optimization
-- Point two covers code maintainability
-- Point three addresses testing strategies
-- Point four discusses deployment pipelines
+  // 6. AskUserQuestion tool - Get user preference
+  const askToolId = generateUuid();
+  const askAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Before I proceed with the setup, I need to know your preferences for the project configuration:',
+      },
+      {
+        type: 'tool_use',
+        id: askToolId,
+        name: 'AskUserQuestion',
+        input: {
+          questions: [
+            {
+              question: 'Which styling solution do you prefer?',
+              header: 'Styling Choice',
+              options: [
+                {
+                  label: 'Tailwind CSS',
+                  description: 'Utility-first CSS framework',
+                },
+                {
+                  label: 'CSS Modules',
+                  description: 'Scoped CSS with modules',
+                },
+                {
+                  label: 'Styled Components',
+                  description: 'CSS-in-JS solution',
+                },
+                { label: 'Vanilla CSS', description: 'Plain CSS files' },
+              ],
+              multiSelect: false,
+            },
+            {
+              question: 'Which testing frameworks should I set up?',
+              header: 'Testing Setup',
+              options: [
+                { label: 'Vitest', description: 'Fast unit testing' },
+                {
+                  label: 'React Testing Library',
+                  description: 'Component testing',
+                },
+                { label: 'Playwright', description: 'E2E testing' },
+                { label: 'Cypress', description: 'E2E testing alternative' },
+              ],
+              multiSelect: true,
+            },
+          ],
+          answers: {},
+        },
+        displayName: 'Ask User',
+        description: 'Requesting project preferences',
+      },
+    ],
+    text: 'Before I proceed, I need to know your preferences:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 150,
+      outputTokens: 200,
+      totalTokens: 350,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: askAssistantUuid,
+    parentUuid: null,
+  });
 
-What are your thoughts on all of this?`,
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: askToolId,
+        name: 'AskUserQuestion',
+        input: {},
+        result: {
+          llmContent: `User selected:
+- Styling: Tailwind CSS
+- Testing: Vitest, React Testing Library`,
+          returnDisplay: `User Preferences:
+✓ Styling: Tailwind CSS
+✓ Testing: Vitest, React Testing Library`,
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: askAssistantUuid,
+  });
+
+  // 7. bash tool - Run command
+  const bashToolId = generateUuid();
+  const bashAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: "Great choices! Now let me install the dependencies. I'll run the installation command:",
+      },
+      {
+        type: 'tool_use',
+        id: bashToolId,
+        name: 'bash',
+        input: {
+          command:
+            'npm install tailwindcss postcss autoprefixer vitest @testing-library/react --save-dev',
+          timeout: 120000,
+          run_in_background: false,
+        },
+        displayName: 'Run Command',
+        description: 'Installing dependencies via npm',
+      },
+    ],
+    text: 'Great choices! Now let me install the dependencies:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 150,
+      outputTokens: 100,
+      totalTokens: 250,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: bashAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: bashToolId,
+        name: 'bash',
+        input: {
+          command:
+            'npm install tailwindcss postcss autoprefixer vitest @testing-library/react --save-dev',
+        },
+        result: {
+          llmContent: `added 127 packages in 8s
+
+43 packages are looking for funding
+  run \`npm fund\` for details`,
+          returnDisplay: `✓ Installation complete
+Added 127 packages in 8s`,
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: bashAssistantUuid,
+  });
+
+  // 8. bash with background - Long running command
+  const bashBgToolId = generateUuid();
+  const bashBgAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Let me start the development server in the background so you can see your changes live:',
+      },
+      {
+        type: 'tool_use',
+        id: bashBgToolId,
+        name: 'bash',
+        input: {
+          command: 'npm run dev',
+          timeout: null,
+          run_in_background: true,
+        },
+        displayName: 'Run Dev Server',
+        description: 'Starting development server in background',
+      },
+    ],
+    text: 'Let me start the development server:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 100,
+      outputTokens: 80,
+      totalTokens: 180,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: bashBgAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: bashBgToolId,
+        name: 'bash',
+        input: { command: 'npm run dev', run_in_background: true },
+        result: {
+          llmContent: `Background task started with id: task_abc123
+Initial output:
+  VITE v4.4.0  ready in 324 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose`,
+          returnDisplay: `🚀 Dev server started
+Running at http://localhost:5173/
+Task ID: task_abc123`,
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: bashBgAssistantUuid,
+  });
+
+  // 9. bash_output tool - Check background task
+  const bashOutputToolId = generateUuid();
+  const bashOutputAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Let me check the output of the running development server:',
+      },
+      {
+        type: 'tool_use',
+        id: bashOutputToolId,
+        name: 'bash_output',
+        input: {
+          task_id: 'task_abc123',
+        },
+        displayName: 'Check Task Output',
+        description: 'Getting output from background task',
+      },
+    ],
+    text: 'Let me check the development server output:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 80,
+      outputTokens: 60,
+      totalTokens: 140,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: bashOutputAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: bashOutputToolId,
+        name: 'bash_output',
+        input: { task_id: 'task_abc123' },
+        result: {
+          llmContent: `Task task_abc123 is still running.
+Recent output:
+  VITE v4.4.0  ready in 324 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h to show help`,
+          returnDisplay: `⏳ Task running
+Latest: Server ready at http://localhost:5173/`,
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: bashOutputAssistantUuid,
+  });
+
+  // 10. write tool - Create new file
+  const writeToolId = generateUuid();
+  const writeAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Now let me create the Tailwind CSS configuration file:',
+      },
+      {
+        type: 'tool_use',
+        id: writeToolId,
+        name: 'write',
+        input: {
+          file_path: '/project/tailwind.config.js',
+          content: `/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        primary: '#3b82f6',
+        secondary: '#64748b',
+      },
+      fontFamily: {
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+    },
+  },
+  plugins: [],
+}`,
+        },
+        displayName: 'Create File',
+        description: 'Creating /project/tailwind.config.js',
+      },
+    ],
+    text: 'Now let me create the Tailwind configuration:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 150,
+      outputTokens: 200,
+      totalTokens: 350,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: writeAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: writeToolId,
+        name: 'write',
+        input: { file_path: '/project/tailwind.config.js' },
+        result: {
+          llmContent:
+            'File created successfully at /project/tailwind.config.js',
+          returnDisplay: '✓ Created tailwind.config.js',
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: writeAssistantUuid,
+  });
+
+  // 11. edit tool - Modify existing file
+  const editToolId = generateUuid();
+  const editAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Let me update the Button component to use Tailwind CSS classes:',
+      },
+      {
+        type: 'tool_use',
+        id: editToolId,
+        name: 'edit',
+        input: {
+          file_path: '/project/src/components/Button.tsx',
+          old_string: `const Button = () => {
+  return <button>Click</button>;
+};`,
+          new_string: `interface ButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary';
+}
+
+const Button: React.FC<ButtonProps> = ({ 
+  children, 
+  onClick,
+  variant = 'primary' 
+}) => {
+  return (
+    <button 
+      onClick={onClick}
+      className={\`px-4 py-2 rounded-lg font-medium transition-colors
+        \${variant === 'primary' 
+          ? 'bg-primary text-white hover:bg-blue-600' 
+          : 'bg-secondary text-white hover:bg-slate-600'
+        }\`}
+    >
+      {children}
+    </button>
+  );
+};`,
+          replace_all: false,
+        },
+        displayName: 'Edit File',
+        description: 'Updating Button component with Tailwind',
+      },
+    ],
+    text: 'Let me update the Button component:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 200,
+      outputTokens: 250,
+      totalTokens: 450,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: editAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: editToolId,
+        name: 'edit',
+        input: {
+          file_path: '/project/src/components/Button.tsx',
+          old_string:
+            'const Button = () => {\n  return <button>Click</button>;\n};',
+          new_string: '/* ... new Button component ... */',
+        },
+        result: {
+          llmContent: 'File updated successfully',
+          returnDisplay: {
+            type: 'diff_viewer',
+            diff: `- const Button = () => {
+-   return <button>Click</button>;
+- };
++ interface ButtonProps {
++   children: React.ReactNode;
++   onClick?: () => void;
++   variant?: 'primary' | 'secondary';
++ }
++ 
++ const Button: React.FC<ButtonProps> = ({ 
++   children, 
++   onClick,
++   variant = 'primary' 
++ }) => {
++   return (
++     <button 
++       onClick={onClick}
++       className={\`px-4 py-2 rounded-lg ...\`}
++     >
++       {children}
++     </button>
++   );
++ };`,
+          },
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: editAssistantUuid,
+  });
+
+  // 12. fetch tool - Get external documentation
+  const fetchToolId = generateUuid();
+  const fetchAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Let me fetch the React documentation for best practices reference:',
+      },
+      {
+        type: 'tool_use',
+        id: fetchToolId,
+        name: 'fetch',
+        input: {
+          url: 'https://react.dev/learn/thinking-in-react',
+          prompt:
+            'Extract the key principles of thinking in React and component design',
+        },
+        displayName: 'Fetch URL',
+        description: 'Fetching React documentation',
+      },
+    ],
+    text: 'Let me fetch the React documentation:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 100,
+      outputTokens: 80,
+      totalTokens: 180,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: fetchAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: fetchToolId,
+        name: 'fetch',
+        input: { url: 'https://react.dev/learn/thinking-in-react' },
+        result: {
+          llmContent: `# Thinking in React - Key Principles
+
+## 1. Break the UI into a component hierarchy
+- Identify components based on the single responsibility principle
+- Each component should ideally do one thing
+
+## 2. Build a static version first
+- Build components that reuse other components
+- Pass data using props
+- Don't use state at all in this step
+
+## 3. Identify the minimal UI state
+- Find the minimal representation of state
+- DRY: Don't Repeat Yourself
+
+## 4. Identify where state should live
+- Find common parent for state
+- Lift state up when needed
+
+## 5. Add inverse data flow
+- Pass callbacks to children
+- Children call callbacks to update parent state`,
+          returnDisplay: `📄 Fetched: react.dev/learn/thinking-in-react
+5 key principles extracted`,
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: fetchAssistantUuid,
+  });
+
+  // 13. todoRead tool - Check task progress
+  const todoReadToolId = generateUuid();
+  const todoReadAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: 'Let me check our progress on the tasks:',
+      },
+      {
+        type: 'tool_use',
+        id: todoReadToolId,
+        name: 'todoRead',
+        input: {},
+        displayName: 'Read Todos',
+        description: 'Checking task progress',
+      },
+    ],
+    text: 'Let me check our task progress:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 80,
+      outputTokens: 60,
+      totalTokens: 140,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: todoReadAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: todoReadToolId,
+        name: 'todoRead',
+        input: {},
+        result: {
+          llmContent: 'Current todos retrieved',
+          returnDisplay: {
+            type: 'todo_read',
+            todos: [
+              { id: '1', text: 'Set up folder structure', completed: true },
+              { id: '2', text: 'Install dependencies', completed: true },
+              { id: '3', text: 'Create configuration files', completed: true },
+              { id: '4', text: 'Write sample components', completed: true },
+              { id: '5', text: 'Fetch documentation', completed: true },
+              { id: '6', text: 'Search existing patterns', completed: true },
+            ],
+          },
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: todoReadAssistantUuid,
+  });
+
+  // 14. kill_bash tool - Stop background task
+  const killBashToolId = generateUuid();
+  const killBashAssistantUuid = generateUuid();
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: "Now that we're done with setup, let me stop the development server:",
+      },
+      {
+        type: 'tool_use',
+        id: killBashToolId,
+        name: 'kill_bash',
+        input: {
+          task_id: 'task_abc123',
+        },
+        displayName: 'Kill Task',
+        description: 'Stopping background dev server',
+      },
+    ],
+    text: 'Let me stop the development server:',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 80,
+      outputTokens: 60,
+      totalTokens: 140,
+    },
+    timestamp: new Date().toISOString(),
+    uuid: killBashAssistantUuid,
+    parentUuid: null,
+  });
+
+  messages.push({
+    type: 'message',
+    role: 'user',
+    content: [
+      {
+        type: 'tool_result',
+        id: killBashToolId,
+        name: 'kill_bash',
+        input: { task_id: 'task_abc123' },
+        result: {
+          llmContent: 'Task task_abc123 has been terminated',
+          returnDisplay: '✓ Dev server stopped',
+        },
+      },
+    ],
+    timestamp: new Date().toISOString(),
+    uuid: generateUuid(),
+    parentUuid: killBashAssistantUuid,
+  });
+
+  // Final summary message
+  messages.push({
+    type: 'message',
+    role: 'assistant',
+    content: [
+      {
+        type: 'text',
+        text: `## 🎉 Project Setup Complete!
+
+I've successfully completed all the tasks for your comprehensive project setup. Here's a summary of what was accomplished:
+
+### ✅ Completed Tasks
+
+| Task | Status |
+|------|--------|
+| Set up folder structure | ✓ Complete |
+| Install dependencies | ✓ Complete |
+| Create configuration files | ✓ Complete |
+| Write sample components | ✓ Complete |
+| Fetch documentation | ✓ Complete |
+| Search existing patterns | ✓ Complete |
+
+### 📦 Installed Packages
+- **tailwindcss** - Utility-first CSS framework
+- **postcss** & **autoprefixer** - CSS processing
+- **vitest** - Fast unit testing
+- **@testing-library/react** - Component testing
+
+### 📁 Created/Modified Files
+- \`tailwind.config.js\` - Tailwind configuration
+- \`src/components/Button.tsx\` - Updated with Tailwind classes
+
+### 💡 Key Takeaways from React Docs
+1. Break UI into component hierarchy
+2. Build static version first
+3. Identify minimal UI state
+4. Lift state up when needed
+5. Add inverse data flow
+
+Your project is now ready for development! Run \`npm run dev\` to start the development server.`,
+      },
+    ],
+    text: 'Project Setup Complete!',
+    model: 'claude-3-sonnet',
+    usage: {
+      inputTokens: 300,
+      outputTokens: 400,
+      totalTokens: 700,
+    },
     timestamp: new Date().toISOString(),
     uuid: generateUuid(),
     parentUuid: null,
@@ -494,7 +1211,8 @@ What are your thoughts on all of this?`,
 };
 
 export function TestMessages() {
-  const testMessages = createTestMessages();
+  const pingPongMessages = createPingPongMessages();
+  const comprehensiveMessages = createComprehensiveMessages();
 
   return (
     <div
@@ -523,54 +1241,51 @@ export function TestMessages() {
           display: 'flex',
           flexDirection: 'column',
           gap: '16px',
-          maxHeight: '600px',
+          maxHeight: '800px',
           overflowY: 'auto',
           padding: '8px',
         }}
       >
-        {/* Section headers with messages */}
-        <SectionHeader title="1. Simple User Message" />
-        <Message message={testMessages[0]} allMessages={testMessages} />
+        {/* LOOP 1: Simple Ping-Pong */}
+        <LoopHeader title="Loop 1: Simple Ping-Pong" />
+        {pingPongMessages.map((msg, idx) => (
+          <Message
+            key={`ping-${idx}`}
+            message={msg}
+            allMessages={pingPongMessages}
+          />
+        ))}
 
-        <SectionHeader title="2. Simple Assistant Message" />
-        <Message message={testMessages[1]} allMessages={testMessages} />
-
-        <SectionHeader title="3. User Message (Multi-line with Code)" />
-        <Message message={testMessages[2]} allMessages={testMessages} />
-
-        <SectionHeader title="4. Assistant Message (Markdown)" />
-        <Message message={testMessages[3]} allMessages={testMessages} />
-
-        <SectionHeader title="5. Assistant Message (with Reasoning/Thinking)" />
-        <Message message={testMessages[4]} allMessages={testMessages} />
-
-        <SectionHeader title="6. Assistant Message (Tool Use - Pending)" />
-        <Message message={testMessages[5]} allMessages={testMessages} />
-
-        <SectionHeader title="7. Assistant Message (Tool Use - Completed)" />
-        <Message message={testMessages[6]} allMessages={testMessages} />
-
-        <SectionHeader title="8. Assistant Message (Tool Use - Error)" />
-        <Message message={testMessages[8]} allMessages={testMessages} />
-
-        <SectionHeader title="9. Assistant Message (Tool Use - Diff Viewer)" />
-        <Message message={testMessages[10]} allMessages={testMessages} />
-
-        <SectionHeader title="10. Assistant Message (Tool Use - Todos)" />
-        <Message message={testMessages[12]} allMessages={testMessages} />
-
-        <SectionHeader title="11. System Message" />
-        <Message message={testMessages[14]} allMessages={testMessages} />
-
-        <SectionHeader title="12. Empty Assistant Message" />
-        <Message message={testMessages[15]} allMessages={testMessages} />
-
-        <SectionHeader title="13. User Message (with Image)" />
-        <Message message={testMessages[16]} allMessages={testMessages} />
-
-        <SectionHeader title="14. Long User Message" />
-        <Message message={testMessages[17]} allMessages={testMessages} />
+        {/* LOOP 2: Comprehensive Agent Demo */}
+        <LoopHeader title="Loop 2: Comprehensive Agent Demo (All Tool Types)" />
+        {comprehensiveMessages.map((msg, idx) => (
+          <Message
+            key={`comp-${idx}`}
+            message={msg}
+            allMessages={comprehensiveMessages}
+          />
+        ))}
       </div>
+    </div>
+  );
+}
+
+function LoopHeader({ title }: { title: string }) {
+  return (
+    <div
+      style={{
+        fontSize: '14px',
+        fontWeight: 700,
+        color: 'var(--text-primary)',
+        backgroundColor: 'var(--bg-tertiary)',
+        padding: '10px 14px',
+        borderRadius: '6px',
+        marginTop: '16px',
+        marginBottom: '8px',
+        borderLeft: '4px solid var(--accent-primary)',
+      }}
+    >
+      {title}
     </div>
   );
 }

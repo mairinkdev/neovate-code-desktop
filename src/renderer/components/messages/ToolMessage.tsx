@@ -1,5 +1,7 @@
 import type { ToolPair } from './types';
 import { DiffViewer } from './DiffViewer';
+import { TodoList } from './TodoList';
+import type { TodoItemProps } from './TodoItem';
 
 interface ToolMessageProps {
   pair: ToolPair;
@@ -135,52 +137,17 @@ export function ToolMessage({ pair }: ToolMessageProps) {
             typeof toolResult.result.returnDisplay === 'object' &&
             (toolResult.result.returnDisplay.type === 'todo_read' ||
               toolResult.result.returnDisplay.type === 'todo_write') && (
-              <div
-                style={{
-                  backgroundColor: 'var(--bg-primary)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '6px',
-                  padding: '12px',
-                  fontSize: '13px',
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 600,
-                    marginBottom: '8px',
-                    color: 'var(--text-primary)',
-                  }}
-                >
-                  Todos
-                </div>
-                {toolResult.result.returnDisplay.todos.map((todo: any) => (
-                  <div
-                    key={todo.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      padding: '4px 0',
-                      color: 'var(--text-primary)',
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={todo.completed}
-                      disabled
-                      style={{ marginRight: '8px' }}
-                    />
-                    <span
-                      style={{
-                        textDecoration: todo.completed
-                          ? 'line-through'
-                          : 'none',
-                      }}
-                    >
-                      {todo.text}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <TodoList
+                todos={toolResult.result.returnDisplay.todos.map(
+                  (todo: any): TodoItemProps => ({
+                    id: todo.id,
+                    content: todo.content || todo.text,
+                    status:
+                      todo.status || (todo.completed ? 'completed' : 'pending'),
+                    priority: todo.priority || 'medium',
+                  }),
+                )}
+              />
             )}
 
           {/* Default text result */}
