@@ -2,6 +2,7 @@ import { useStore } from './store';
 import { MainLayout } from './components';
 import { useStoreConnection } from './hooks';
 import { Spinner } from './components/ui';
+import { SettingsPage } from './components/settings';
 
 function App() {
   // Establish WebSocket connection on mount
@@ -16,6 +17,7 @@ function App() {
     selectRepo,
     selectWorkspace,
     sendMessage,
+    showSettings,
   } = useStore();
 
   // Get the selected workspace
@@ -45,6 +47,15 @@ function App() {
             Connecting to server...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  // Show settings page if enabled
+  if (showSettings) {
+    return (
+      <div className="h-screen flex flex-col">
+        <SettingsPage />
       </div>
     );
   }

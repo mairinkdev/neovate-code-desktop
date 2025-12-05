@@ -138,7 +138,6 @@ First, let me check the current directory structure and set up a task tracking s
         input: {
           dir_path: '/project',
         },
-        displayName: 'List Directory',
         description: 'Listing contents of /project',
       },
     ],
@@ -241,7 +240,6 @@ First, let me check the current directory structure and set up a task tracking s
             },
           ],
         },
-        displayName: 'Create Todo List',
         description: 'Setting up project task tracking',
       },
     ],
@@ -307,7 +305,6 @@ First, let me check the current directory structure and set up a task tracking s
           offset: null,
           limit: null,
         },
-        displayName: 'Read File',
         description: 'Reading /project/package.json',
       },
     ],
@@ -384,7 +381,6 @@ First, let me check the current directory structure and set up a task tracking s
           pattern: '**/*.tsx',
           path: '/project/src',
         },
-        displayName: 'Find Files',
         description: 'Searching for **/*.tsx in /project/src',
       },
     ],
@@ -449,7 +445,6 @@ First, let me check the current directory structure and set up a task tracking s
           include: '*.tsx',
           limit: 20,
         },
-        displayName: 'Search Code',
         description: 'Searching for React hooks usage',
       },
     ],
@@ -545,7 +540,6 @@ components/Button.tsx:5: const [isHovered, setIsHovered] = useState(false);`,
           ],
           answers: {},
         },
-        displayName: 'Ask User',
         description: 'Requesting project preferences',
       },
     ],
@@ -606,7 +600,6 @@ components/Button.tsx:5: const [isHovered, setIsHovered] = useState(false);`,
           timeout: 120000,
           run_in_background: false,
         },
-        displayName: 'Run Command',
         description: 'Installing dependencies via npm',
       },
     ],
@@ -669,7 +662,6 @@ Added 127 packages in 8s`,
           timeout: null,
           run_in_background: true,
         },
-        displayName: 'Run Dev Server',
         description: 'Starting development server in background',
       },
     ],
@@ -730,7 +722,6 @@ Task ID: task_abc123`,
         input: {
           task_id: 'task_abc123',
         },
-        displayName: 'Check Task Output',
         description: 'Getting output from background task',
       },
     ],
@@ -810,7 +801,6 @@ export default {
   plugins: [],
 }`,
         },
-        displayName: 'Create File',
         description: 'Creating /project/tailwind.config.js',
       },
     ],
@@ -893,7 +883,6 @@ const Button: React.FC<ButtonProps> = ({
 };`,
           replace_all: false,
         },
-        displayName: 'Edit File',
         description: 'Updating Button component with Tailwind',
       },
     ],
@@ -979,7 +968,6 @@ const Button: React.FC<ButtonProps> = ({
           prompt:
             'Extract the key principles of thinking in React and component design',
         },
-        displayName: 'Fetch URL',
         description: 'Fetching React documentation',
       },
     ],
@@ -1053,7 +1041,6 @@ const Button: React.FC<ButtonProps> = ({
         id: todoReadToolId,
         name: 'todoRead',
         input: {},
-        displayName: 'Read Todos',
         description: 'Checking task progress',
       },
     ],
@@ -1117,7 +1104,6 @@ const Button: React.FC<ButtonProps> = ({
         input: {
           task_id: 'task_abc123',
         },
-        displayName: 'Kill Task',
         description: 'Stopping background dev server',
       },
     ],
@@ -1247,7 +1233,6 @@ export function TestMessages() {
         }}
       >
         {/* LOOP 1: Simple Ping-Pong */}
-        <LoopHeader title="Loop 1: Simple Ping-Pong" />
         {pingPongMessages.map((msg, idx) => (
           <Message
             key={`ping-${idx}`}
@@ -1257,7 +1242,6 @@ export function TestMessages() {
         ))}
 
         {/* LOOP 2: Comprehensive Agent Demo */}
-        <LoopHeader title="Loop 2: Comprehensive Agent Demo (All Tool Types)" />
         {comprehensiveMessages.map((msg, idx) => (
           <Message
             key={`comp-${idx}`}

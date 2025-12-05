@@ -453,6 +453,8 @@ RepoSidebar.Header = function Header() {
 };
 
 RepoSidebar.Footer = function Footer() {
+  const setShowSettings = useStore((state) => state.setShowSettings);
+
   return (
     <div
       className="px-3 py-2 flex gap-2"
@@ -469,7 +471,7 @@ RepoSidebar.Footer = function Footer() {
       <button
         className="p-2 rounded hover:bg-opacity-70 transition-colors"
         style={{ color: 'var(--text-secondary)' }}
-        onClick={() => alert('Not implemented')}
+        onClick={() => setShowSettings(true)}
       >
         <HugeiconsIcon icon={SettingsIcon} size={18} strokeWidth={1.5} />
       </button>

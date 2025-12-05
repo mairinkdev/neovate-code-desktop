@@ -41,6 +41,7 @@ interface StoreState {
   selectedRepoPath: string | null;
   selectedWorkspaceId: WorkspaceId | null;
   selectedSessionId: SessionId | null;
+  showSettings: boolean;
 }
 
 interface StoreActions {
@@ -81,6 +82,7 @@ interface StoreActions {
   selectRepo: (path: string | null) => void;
   selectWorkspace: (id: string | null) => void;
   selectSession: (id: string | null) => void;
+  setShowSettings: (show: boolean) => void;
 }
 
 type Store = StoreState & StoreActions;
@@ -107,6 +109,7 @@ const useStore = create<Store>()((set, get) => ({
   selectedRepoPath: null,
   selectedWorkspaceId: null,
   selectedSessionId: null,
+  showSettings: false,
 
   connect: async () => {
     const { transport } = get();
@@ -579,6 +582,12 @@ const useStore = create<Store>()((set, get) => ({
   selectSession: (id: string | null) => {
     set(() => ({
       selectedSessionId: id,
+    }));
+  },
+
+  setShowSettings: (show: boolean) => {
+    set(() => ({
+      showSettings: show,
     }));
   },
 }));

@@ -1,3 +1,18 @@
+import { HugeiconsIcon } from '@hugeicons/react';
+import {
+  ComputerTerminalIcon,
+  FileIcon,
+  FolderIcon,
+  EditIcon,
+  SearchIcon,
+  Globe02Icon,
+  CheckmarkCircle02Icon,
+  MessageQuestionIcon,
+  CancelCircleIcon,
+  FloppyDiskIcon,
+  CodeIcon,
+  PlusSignIcon,
+} from '@hugeicons/core-free-icons';
 import type { ToolPair } from './types';
 import { DiffViewer } from './DiffViewer';
 import { TodoList } from './TodoList';
@@ -5,6 +20,48 @@ import type { TodoItemProps } from './TodoItem';
 
 interface ToolMessageProps {
   pair: ToolPair;
+}
+
+/**
+ * Get the appropriate icon for a tool based on its name
+ */
+function getToolIcon(toolName: string) {
+  const iconMap: Record<string, any> = {
+    // Bash/Terminal commands
+    bash: ComputerTerminalIcon,
+    bash_output: ComputerTerminalIcon,
+    kill_bash: CancelCircleIcon,
+
+    // File operations
+    read: FileIcon,
+    write: FloppyDiskIcon,
+    edit: EditIcon,
+    ls: FolderIcon,
+
+    // Search operations
+    glob: SearchIcon,
+    grep: SearchIcon,
+
+    // Network operations
+    fetch: Globe02Icon,
+
+    // Todo operations
+    todoRead: CheckmarkCircle02Icon,
+    todoWrite: CheckmarkCircle02Icon,
+
+    // User interaction
+    AskUserQuestion: MessageQuestionIcon,
+
+    // Code operations
+    Code: CodeIcon,
+    StrReplace: EditIcon,
+    Read: FileIcon,
+    Write: FloppyDiskIcon,
+    TodoWrite: CheckmarkCircle02Icon,
+    TodoRead: CheckmarkCircle02Icon,
+  };
+
+  return iconMap[toolName] || PlusSignIcon;
 }
 
 /**
@@ -32,6 +89,7 @@ export function ToolMessage({ pair }: ToolMessageProps) {
 
   // Get display name or fallback to tool name
   const displayName = toolUse.displayName || toolUse.name;
+  const toolIcon = getToolIcon(toolUse.name);
 
   return (
     <div style={{}}>
@@ -43,17 +101,13 @@ export function ToolMessage({ pair }: ToolMessageProps) {
           marginBottom: '8px',
         }}
       >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 16 16"
-          style={{ marginRight: '8px', color: 'var(--text-secondary)' }}
-        >
-          <path
-            fill="currentColor"
-            d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm.75 4.5v3.25h3.25v1.5h-3.25v3.25h-1.5v-3.25h-3.25v-1.5h3.25V4.5h1.5z"
-          />
-        </svg>
+        <HugeiconsIcon
+          icon={toolIcon}
+          size={16}
+          color="var(--text-secondary)"
+          strokeWidth={1.5}
+          style={{ marginRight: '8px' }}
+        />
         <span
           style={{
             fontWeight: 600,
