@@ -720,7 +720,7 @@ const useStore = create<Store>()((set, get) => ({
         cwd: workspace.worktreePath,
       });
       if (response.success) {
-        const files = response.data.files;
+        const files = response.data.files.map((file: any) => file.path).sort();
         set((state) => ({
           filesByWorkspace: { ...state.filesByWorkspace, [workspaceId]: files },
         }));

@@ -49,9 +49,7 @@ export function SuggestionDropdown({
                 key={actualIndex}
                 className="px-3 py-2 cursor-pointer flex items-center gap-2 transition-colors"
                 style={{
-                  backgroundColor: isSelected
-                    ? 'var(--bg-active)'
-                    : 'transparent',
+                  backgroundColor: isSelected ? 'var(--accent)' : 'transparent',
                 }}
               >
                 <HugeiconsIcon
