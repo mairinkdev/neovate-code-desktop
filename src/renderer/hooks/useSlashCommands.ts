@@ -20,6 +20,8 @@ export function useSlashCommands({
 
   const suggestions = useMemo(() => {
     if (!value.startsWith('/')) return [];
+    // If there's a space, the command is already selected - hide suggestions
+    if (value.includes(' ')) return [];
     const prefix = value.slice(1).toLowerCase().trim();
     if (prefix === '') return commands;
 
