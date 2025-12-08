@@ -99,7 +99,11 @@ export function AssistantMessage({
 
         {/* Text parts with markdown rendering */}
         {textParts.length > 0 && (
-          <div>
+          <div
+            style={{
+              marginBottom: '12px',
+            }}
+          >
             {textParts.map((part, index) => (
               <MarkdownContent
                 key={`text-${message.uuid}-${index}`}
@@ -111,7 +115,12 @@ export function AssistantMessage({
 
         {/* Tool use parts with results */}
         {toolPairs.length > 0 && (
-          <div style={{ marginTop: textParts.length > 0 ? '12px' : '0' }}>
+          <div
+            style={{
+              marginTop: textParts.length > 0 ? '12px' : '0',
+              marginBottom: '12px',
+            }}
+          >
             {toolPairs.map((pair, index) => (
               <ToolMessage
                 key={`tool-${pair.toolUse.id}-${index}`}
@@ -130,6 +139,7 @@ export function AssistantMessage({
                 fontSize: '13px',
                 color: 'var(--text-secondary)',
                 fontStyle: 'italic',
+                marginBottom: '12px',
               }}
             >
               (Empty message)
