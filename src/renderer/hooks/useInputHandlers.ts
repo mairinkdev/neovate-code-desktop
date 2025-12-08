@@ -482,6 +482,14 @@ export function useInputHandlers({
     [inputState, setHistoryIndex],
   );
 
+  const onSelect = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // @ts-ignore
+      inputState.setCursorPosition(e.target.selectionStart);
+    },
+    [inputState],
+  );
+
   return {
     inputState,
     mode,
@@ -490,6 +498,7 @@ export function useInputHandlers({
       onKeyDown,
       onPaste,
       onChange,
+      onSelect,
     },
     suggestions: {
       type:

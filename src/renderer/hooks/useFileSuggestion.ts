@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useListNavigation } from './useListNavigation';
+import { findAtTokenAtCursor } from '../lib/tokenUtils';
 
 type TriggerType = 'at' | 'tab' | null;
 
@@ -28,13 +29,16 @@ export function useFileSuggestion({
   const [isLoading, setIsLoading] = useState(false);
 
   const atMatch = useMemo((): MatchResult => {
-    const beforeCursor = value.substring(0, cursorPosition);
-    const atMatches = [
-      ...beforeCursor.matchAll(/(?:^|\s)(@(?:"[^"]*"|[^\s]*))/g),
-    ];
-    const lastMatch = atMatches[atMatches.length - 1];
+    console.log(
+      '[useFileSuggestion] computing atMatch, value:',
+      JSON.stringify(value),
+      'cursorPosition:',
+      cursorPosition,
+    );
+    const tokenRange = findAtTokenAtCursor(value, cursorPosition);
 
-    if (!lastMatch) {
+    if (!tokenRange) {
+      console.log('[useFileSuggestion] no tokenRange found');
       return {
         hasQuery: false,
         fullMatch: '',
@@ -44,15 +48,27 @@ export function useFileSuggestion({
       };
     }
 
-    const fullMatch = lastMatch[1];
-    let query = fullMatch.slice(1);
+    const { startIndex, fullMatch } = tokenRange;
+    // Query is text between @ and cursor (for partial matching during typing)
+    let query = value.substring(startIndex + 1, cursorPosition);
     if (query.startsWith('"')) {
       query = query.slice(1).replace(/"$/, '');
     }
-    const startIndex =
-      lastMatch.index! + (lastMatch[0].length - fullMatch.length);
 
-    return { hasQuery: true, fullMatch, query, startIndex, triggerType: 'at' };
+    console.log('[useFileSuggestion] atMatch result:', {
+      hasQuery: true,
+      fullMatch,
+      query,
+      startIndex,
+      triggerType: 'at',
+    });
+    return {
+      hasQuery: true,
+      fullMatch,
+      query,
+      startIndex,
+      triggerType: 'at',
+    };
   }, [value, cursorPosition]);
 
   const tabMatch = useMemo((): MatchResult => {

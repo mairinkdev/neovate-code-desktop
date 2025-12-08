@@ -71,8 +71,22 @@ export function ChatInput({
     }
     handlers.onChange({
       ...e,
-      target: { ...e.target, value: newValue },
+      target: {
+        ...e.target,
+        selectionStart: e.target.selectionStart,
+        value: newValue,
+      },
     } as React.ChangeEvent<HTMLTextAreaElement>);
+  };
+  const handleSelect = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    handlers.onSelect({
+      ...e,
+      target: {
+        ...e.target,
+        // @ts-ignore
+        selectionStart: e.target.selectionStart,
+      },
+    } as React.KeyboardEvent<HTMLTextAreaElement>);
   };
 
   const handleSendClick = () => {
@@ -165,6 +179,7 @@ export function ChatInput({
         <Textarea
           value={displayValue}
           onChange={handleChange}
+          onSelect={handleSelect}
           onKeyDown={handlers.onKeyDown}
           onPaste={handlers.onPaste}
           placeholder={placeholder}
@@ -253,7 +268,9 @@ export function ChatInput({
                     <button
                       type="button"
                       onClick={() => toggleThinking()}
-                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/5 ${thinking === 'high' ? 'thinking-high-twinkle' : ''}`}
+                      className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors hover:bg-black/5 dark:hover:bg-white/5 ${
+                        thinking === 'high' ? 'thinking-high-twinkle' : ''
+                      }`}
                       style={{
                         color:
                           thinking === 'high'
