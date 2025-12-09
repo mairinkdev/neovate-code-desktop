@@ -235,7 +235,7 @@ export const RepoSidebar = ({
                       >
                         {repo.workspaceIds.length}
                       </span>
-                      <button
+                      <span
                         className="p-1 rounded hover:bg-opacity-70"
                         onClick={(e) => handleRepoInfoClick(repo, e)}
                         style={{ color: 'var(--text-secondary)' }}
@@ -245,7 +245,7 @@ export const RepoSidebar = ({
                           size={16}
                           strokeWidth={1.5}
                         />
-                      </button>
+                      </span>
                     </div>
                   </AccordionTrigger>
 
@@ -640,22 +640,22 @@ RepoSidebar.Footer = function Footer({ collapsed }: { collapsed: boolean }) {
       style={{ borderTop: '1px solid var(--border-subtle)' }}
     >
       <AddRepoMenu>
-        <button
+        <div
           className="p-2 rounded hover:bg-opacity-70 transition-colors"
           style={{ color: 'var(--text-secondary)' }}
           title="Add repository"
         >
           <HugeiconsIcon icon={PlusSignIcon} size={18} strokeWidth={1.5} />
-        </button>
+        </div>
       </AddRepoMenu>
-      <button
+      <div
         className="p-2 rounded hover:bg-opacity-70 transition-colors"
         style={{ color: 'var(--text-secondary)' }}
         onClick={() => setShowSettings(true)}
         title="Settings"
       >
         <HugeiconsIcon icon={SettingsIcon} size={18} strokeWidth={1.5} />
-      </button>
+      </div>
     </div>
   );
 };
