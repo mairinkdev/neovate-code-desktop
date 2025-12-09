@@ -262,7 +262,7 @@ export function ToolMessage({ pair }: ToolMessageProps) {
             (toolResult.result.returnDisplay.type === 'todo_read' ||
               toolResult.result.returnDisplay.type === 'todo_write') && (
               <TodoList
-                todos={toolResult.result.returnDisplay.todos.map(
+                todos={toolUse.input.todos.map(
                   (todo: any): TodoItemProps => ({
                     id: todo.id,
                     content: todo.content || todo.text,

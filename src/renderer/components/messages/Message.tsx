@@ -43,6 +43,9 @@ class MessageErrorBoundary extends Component<
           <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>
             Role: {this.props.message.role} | UUID: {this.props.message.uuid}
           </div>
+          <div style={{ fontSize: '12px', fontFamily: 'monospace' }}>
+            {JSON.stringify(this.props.message)}
+          </div>
           {this.state.error && (
             <div
               style={{
