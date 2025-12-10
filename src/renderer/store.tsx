@@ -126,7 +126,12 @@ interface StoreActions {
   ) => Promise<HandlerOutput<K>>;
   onEvent: <T>(event: string, handler: (data: T) => void) => void;
   initialize: () => Promise<void>;
-  sendMessage: (params: { message: string }) => Promise<void>;
+  sendMessage: (params: {
+    message: string | null;
+    planMode: PlanMode;
+    parentUuid?: string;
+    think: ThinkingLevel;
+  }) => Promise<void>;
 
   // Session processing state helpers
   getSessionProcessing: (sessionId: string) => SessionProcessingState;
@@ -430,7 +435,12 @@ const useStore = create<Store>()((set, get) => ({
     return historyByWorkspace[workspaceId] || [];
   },
 
-  sendMessage: async (params: { message: string }) => {
+  sendMessage: async (params: {
+    message: string | null;
+    planMode: PlanMode;
+    parentUuid?: string;
+    think: ThinkingLevel;
+  }) => {
     const {
       selectedSessionId,
       selectedWorkspaceId,
@@ -469,11 +479,17 @@ const useStore = create<Store>()((set, get) => ({
     });
 
     try {
+      // Transform params to backend format
+      const planModeBoolean = params.planMode !== 'plan';
+      const thinking = params.think ? { effect: params.think } : undefined;
+
       const response = await request('session.send', {
         message: params.message,
         sessionId,
         cwd,
-        planMode: false,
+        planMode: planModeBoolean,
+        thinking,
+        parentUuid: params.parentUuid,
       });
 
       if (response.success) {
@@ -496,24 +512,27 @@ const useStore = create<Store>()((set, get) => ({
           return;
         }
 
-        const summary = await request('utils.summarizeMessage', {
-          message: params.message,
-          cwd,
-        });
-        if (summary.success && summary.data.text) {
-          try {
-            const res = JSON.parse(summary.data.text.trim());
-            if (res.title) {
-              await request('session.config.setSummary', {
-                cwd,
-                sessionId,
-                summary: res.title,
-              });
-              updateSession(selectedWorkspaceId, sessionId, {
-                summary: res.title,
-              });
-            }
-          } catch (_error) {}
+        // Only summarize if there's a message to summarize
+        if (params.message) {
+          const summary = await request('utils.summarizeMessage', {
+            message: params.message,
+            cwd,
+          });
+          if (summary.success && summary.data.text) {
+            try {
+              const res = JSON.parse(summary.data.text.trim());
+              if (res.title) {
+                await request('session.config.setSummary', {
+                  cwd,
+                  sessionId,
+                  summary: res.title,
+                });
+                updateSession(selectedWorkspaceId, sessionId, {
+                  summary: res.title,
+                });
+              }
+            } catch (_error) {}
+          }
         }
       } else {
         // Set failed state with error message from response

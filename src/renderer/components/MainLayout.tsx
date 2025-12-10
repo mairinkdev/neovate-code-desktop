@@ -12,7 +12,6 @@ export const MainLayout = ({
   selectedWorkspace,
   onSelectRepo,
   onSelectWorkspace,
-  onSendMessage,
   onExecuteCommand: _onExecuteCommand,
 }: {
   repos: RepoData[];
@@ -21,7 +20,6 @@ export const MainLayout = ({
   selectedWorkspace: WorkspaceData | null;
   onSelectRepo: (path: string | null) => void;
   onSelectWorkspace: (id: string | null) => void;
-  onSendMessage: (sessionId: string, content: string) => Promise<void>;
   onExecuteCommand: (command: string) => Promise<void>;
 }) => {
   // Determine empty state type
@@ -49,7 +47,6 @@ export const MainLayout = ({
           <WorkspacePanel
             workspace={selectedWorkspace}
             emptyStateType={emptyStateType}
-            onSendMessage={onSendMessage}
           />
         </div>
 

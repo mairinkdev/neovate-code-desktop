@@ -34,3 +34,7 @@ For detailed information, consult these documents as needed:
 - `docs/agent/testing.md` - Test setup and conventions
 
 **When working on a task, first determine which documentation is relevant, then read only those files.**
+
+## Important Notes
+
+- `src/renderer/nodeBridge.types.ts` is the source of truth for the IPC messages between the main and renderer processes, and it should not be modified.

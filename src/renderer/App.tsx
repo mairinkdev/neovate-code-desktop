@@ -17,7 +17,6 @@ function App() {
     selectedWorkspaceId,
     selectRepo,
     selectWorkspace,
-    sendMessage,
     showSettings,
     getGlobalConfigValue,
     globalConfig,
@@ -51,10 +50,6 @@ function App() {
   const selectedWorkspace = selectedWorkspaceId
     ? workspaces[selectedWorkspaceId]
     : null;
-
-  const handleSendMessage = async (_sessionId: string, content: string) => {
-    await sendMessage({ message: content });
-  };
 
   // Mock function to execute a command
   const handleExecuteCommand = async (command: string) => {
@@ -96,7 +91,6 @@ function App() {
         selectedWorkspace={selectedWorkspace}
         onSelectRepo={selectRepo}
         onSelectWorkspace={selectWorkspace}
-        onSendMessage={handleSendMessage}
         onExecuteCommand={handleExecuteCommand}
       />
     </div>

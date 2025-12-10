@@ -64,11 +64,9 @@ export function useWorkspaceContext() {
 export const WorkspacePanel = ({
   workspace,
   emptyStateType,
-  onSendMessage,
 }: {
   workspace: WorkspaceData | null;
   emptyStateType: 'no-repos' | 'no-workspace' | null;
-  onSendMessage: (sessionId: string, content: string) => Promise<void>;
 }) => {
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -88,6 +86,8 @@ export const WorkspacePanel = ({
     (state) => state.fetchSlashCommandList,
   );
   const cancelSession = useStore((state) => state.cancelSession);
+  const getSessionInput = useStore((state) => state.getSessionInput);
+  const storeSendMessage = useStore((state) => state.sendMessage);
 
   // Get sessions and messages for the current workspace from store - memoized to avoid infinite loop
   const allSessions = useMemo(
@@ -185,9 +185,15 @@ export const WorkspacePanel = ({
   const sendMessage = async (content: string) => {
     if (!content.trim() || isLoading) return;
 
+    const inputState = getSessionInput(selectedSessionId || '');
+
     setIsLoading(true);
     try {
-      await onSendMessage(selectedSessionId || '', content);
+      await storeSendMessage({
+        message: content,
+        planMode: inputState.planMode,
+        think: inputState.thinking,
+      });
       setInputValue('');
     } finally {
       setIsLoading(false);
