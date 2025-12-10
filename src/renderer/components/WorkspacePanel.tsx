@@ -529,7 +529,7 @@ WorkspacePanel.Messages = function Messages() {
     const isSessionSwitch = prevSessionIdRef.current !== selectedSessionId;
 
     if (isNearBottom || isFirstLoad || isSessionSwitch) {
-      container.scrollTo({ top: scrollHeight, behavior: 'smooth' });
+      container.scrollTo({ top: scrollHeight, behavior: 'instant' });
     }
 
     prevMessagesLengthRef.current = messages.length;
