@@ -371,19 +371,15 @@ const useStore = create<Store>()((set, get) => ({
     });
 
     try {
-      await request('session.send', {
+      const response = await request('session.send', {
         message: params.message,
         sessionId,
         cwd,
         planMode: false,
       });
 
-      const workspaceSessions = sessions[selectedWorkspaceId];
-      const session = workspaceSessions.find((s) => s.sessionId === sessionId);
-      const sessionMessages = get().messages[sessionId] || [];
-      const userMessages = sessionMessages.filter((m) => m.role === 'user');
-      if (userMessages.length > 1) {
-        // Reset processing state on completion
+      if (response.success) {
+        // Reset processing state on success
         setSessionProcessing(sessionId, {
           status: 'idle',
           processingStartTime: null,
@@ -391,45 +387,54 @@ const useStore = create<Store>()((set, get) => ({
           error: null,
           retryInfo: null,
         });
-        return;
-      }
-      const userMessagesText = userMessages
-        .map((m) => m.content)
-        .slice(0, 10)
-        .join('\n');
-      const summary = await request('utils.summarizeMessage', {
-        message: params.message,
-        cwd,
-      });
-      if (summary.success && summary.data.text) {
-        try {
-          const res = JSON.parse(summary.data.text.trim());
-          if (res.title) {
-            await request('session.config.setSummary', {
-              cwd,
-              sessionId,
-              summary: res.title,
-            });
-            updateSession(selectedWorkspaceId, sessionId, {
-              summary: res.title,
-            });
-          }
-        } catch (_error) {}
-      }
 
-      // Reset processing state on success
-      setSessionProcessing(sessionId, {
-        status: 'idle',
-        processingStartTime: null,
-        processingToken: 0,
-        error: null,
-        retryInfo: null,
-      });
+        const workspaceSessions = sessions[selectedWorkspaceId];
+        const session = workspaceSessions.find(
+          (s) => s.sessionId === sessionId,
+        );
+        const sessionMessages = get().messages[sessionId] || [];
+        const userMessages = sessionMessages.filter((m) => m.role === 'user');
+        if (userMessages.length > 1) {
+          return;
+        }
+
+        const summary = await request('utils.summarizeMessage', {
+          message: params.message,
+          cwd,
+        });
+        if (summary.success && summary.data.text) {
+          try {
+            const res = JSON.parse(summary.data.text.trim());
+            if (res.title) {
+              await request('session.config.setSummary', {
+                cwd,
+                sessionId,
+                summary: res.title,
+              });
+              updateSession(selectedWorkspaceId, sessionId, {
+                summary: res.title,
+              });
+            }
+          } catch (_error) {}
+        }
+      } else {
+        // Set failed state with error message from response
+        setSessionProcessing(sessionId, {
+          status: 'failed',
+          processingStartTime: null,
+          processingToken: 0,
+          error: response.error?.message || 'An error occurred',
+          retryInfo: null,
+        });
+      }
     } catch (error) {
       // Set failed state with error message
       setSessionProcessing(sessionId, {
         status: 'failed',
+        processingStartTime: null,
+        processingToken: 0,
         error: error instanceof Error ? error.message : 'An error occurred',
+        retryInfo: null,
       });
     }
   },
