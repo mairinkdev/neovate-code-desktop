@@ -1,17 +1,6 @@
 import type { StoreApi } from 'zustand';
 import { toastManager } from './components/ui/toast';
 
-// Declare electron API on window object
-declare global {
-  interface Window {
-    // @ts-ignore
-    electron: {
-      saveStore: (state: any) => Promise<{ success: boolean }>;
-      loadStore: () => Promise<any>;
-    };
-  }
-}
-
 // Define the persistable state shape
 interface PersistedState {
   repos: Record<string, any>;
