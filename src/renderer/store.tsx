@@ -628,7 +628,7 @@ const useStore = create<Store>()((set, get) => ({
             toastManager.add({
               type: 'error',
               title: 'Command not supported',
-              description: `${command} Local JSX commands are not supported`,
+              description: `${parsed.command} Local JSX commands are not supported`,
             });
           }
           return;
