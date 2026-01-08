@@ -527,13 +527,15 @@ export function useInputHandlers({
       const newValue = e.target.value;
       inputState.setValue(newValue);
       inputState.setCursorPosition(e.target.selectionStart);
-      setHistoryIndex(null);
+      if (historyIndex !== null) {
+        setHistoryIndex(null);
+      }
 
       if (newValue.includes('@') || newValue.trim() === '') {
         setForceTabTrigger(false);
       }
     },
-    [inputState, setHistoryIndex],
+    [inputState, historyIndex, setHistoryIndex],
   );
 
   const onSelect = useCallback(

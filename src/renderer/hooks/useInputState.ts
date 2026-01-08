@@ -81,7 +81,12 @@ export function useInputState(
     (pos: number) => {
       setLocalCursorPosition(pos);
       if (sessionId) {
-        setSessionInput(sessionId, { cursorPosition: pos });
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+        debounceRef.current = setTimeout(() => {
+          setSessionInput(sessionId, { cursorPosition: pos });
+        }, DEBOUNCE_MS);
       }
     },
     [sessionId, setSessionInput],
