@@ -76,3 +76,21 @@ User types → Local state updates (immediate) → UI re-renders (fast)
 ### Configuration
 
 - Debounce timing: 150ms (configurable if needed)
+
+## Follow-up Optimization (2026-01-08)
+
+### Additional Issues Found
+
+1. **`setCursorPosition` was not debounced**: While `setValue` was debounced, cursor position updates were still immediate, causing store updates on every keystroke.
+
+2. **Redundant `setHistoryIndex(null)` calls**: The `onChange` handler called `setHistoryIndex(null)` on every keystroke, even when already null.
+
+### Additional Changes
+
+#### 1. `src/renderer/hooks/useInputState.ts`
+- `setCursorPosition` now uses the same 150ms debounce pattern as `setValue`
+- Both value and cursor position updates share the same debounce timer, batching updates
+
+#### 2. `src/renderer/hooks/useInputHandlers.ts`
+- Guard `setHistoryIndex(null)` with `if (historyIndex !== null)` check
+- Added `historyIndex` to dependency array of `onChange` callback
