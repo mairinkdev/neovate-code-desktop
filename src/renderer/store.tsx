@@ -652,6 +652,33 @@ const useStore = create<Store>()((set, get) => ({
       retryInfo: null,
     });
 
+    // Fire-and-forget summarization on first message
+    const sessionMessages = get().messages[sessionId] || [];
+    const userMessages = sessionMessages.filter((m) => m.role === 'user');
+    if (userMessages.length === 0 && message) {
+      (async () => {
+        try {
+          const summary = await request('utils.summarizeMessage', {
+            message,
+            cwd,
+          });
+          if (summary.success && summary.data.text) {
+            const res = JSON.parse(summary.data.text.trim());
+            if (res.title) {
+              await request('session.config.setSummary', {
+                cwd,
+                sessionId,
+                summary: res.title,
+              });
+              updateSession(selectedWorkspaceId, sessionId, {
+                summary: res.title,
+              });
+            }
+          }
+        } catch (_error) {}
+      })();
+    }
+
     try {
       // Transform params to backend format
       const planModeBoolean = params.planMode === 'plan';
@@ -676,39 +703,6 @@ const useStore = create<Store>()((set, get) => ({
           error: null,
           retryInfo: null,
         });
-
-        const workspaceSessions = sessions[selectedWorkspaceId];
-        const session = workspaceSessions.find(
-          (s) => s.sessionId === sessionId,
-        );
-        const sessionMessages = get().messages[sessionId] || [];
-        const userMessages = sessionMessages.filter((m) => m.role === 'user');
-        if (userMessages.length > 1) {
-          return;
-        }
-
-        // Only summarize if there's a message to summarize
-        if (message) {
-          const summary = await request('utils.summarizeMessage', {
-            message,
-            cwd,
-          });
-          if (summary.success && summary.data.text) {
-            try {
-              const res = JSON.parse(summary.data.text.trim());
-              if (res.title) {
-                await request('session.config.setSummary', {
-                  cwd,
-                  sessionId,
-                  summary: res.title,
-                });
-                updateSession(selectedWorkspaceId, sessionId, {
-                  summary: res.title,
-                });
-              }
-            } catch (_error) {}
-          }
-        }
       } else {
         // Set failed state with error message from response
         setSessionProcessing(sessionId, {
