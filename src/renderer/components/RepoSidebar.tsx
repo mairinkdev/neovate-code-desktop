@@ -97,17 +97,6 @@ export const RepoSidebar = ({
   const [selectedRepoForDialog, setSelectedRepoForDialog] =
     useState<RepoData | null>(null);
 
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768 && !sidebarCollapsed) {
-        toggleSidebar();
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarCollapsed, toggleSidebar]);
-
   const handleRepoInfoClick = (repo: RepoData, e: MouseEvent) => {
     e.stopPropagation();
     setAlertDialogOpen(false); // Ensure alert is closed
@@ -130,14 +119,10 @@ export const RepoSidebar = ({
 
   return (
     <div
-      className={cn(
-        'fixed left-0 top-0 h-screen z-10 flex flex-col transition-all duration-200',
-        sidebarCollapsed ? 'w-12' : 'w-64',
-      )}
+      className="h-full flex flex-col overflow-hidden"
       style={{
         backgroundColor: 'var(--bg-surface)',
         color: 'var(--text-primary)',
-        borderRight: '1px solid var(--border-subtle)',
       }}
     >
       <RepoSidebar.Header
