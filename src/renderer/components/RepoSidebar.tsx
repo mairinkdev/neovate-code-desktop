@@ -91,6 +91,7 @@ export const RepoSidebar = ({
   const sidebarCollapsed = useStore((state) => state.sidebarCollapsed);
   const toggleSidebar = useStore((state) => state.toggleSidebar);
   const getSessionProcessing = useStore((state) => state.getSessionProcessing);
+  const messages = useStore((state) => state.messages);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [alertDialogOpen, setAlertDialogOpen] = useState(false);
@@ -227,8 +228,26 @@ export const RepoSidebar = ({
                                 }}
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  const workspaceSessions =
+                                    sessions[workspaceId] || [];
+                                  const currentSession = workspaceSessions.find(
+                                    (s) => s.sessionId === selectedSessionId,
+                                  );
+                                  const currentSessionMessages =
+                                    selectedSessionId
+                                      ? messages[selectedSessionId] || []
+                                      : [];
+                                  const isCurrentSessionEmpty =
+                                    selectedWorkspaceId === workspaceId &&
+                                    currentSession &&
+                                    currentSessionMessages.length === 0;
+
                                   selectWorkspace(workspaceId);
-                                  createSession();
+                                  if (isCurrentSessionEmpty) {
+                                    selectSession(selectedSessionId!);
+                                  } else {
+                                    createSession();
+                                  }
                                 }}
                               >
                                 <HugeiconsIcon

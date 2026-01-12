@@ -38,3 +38,4 @@ For detailed information, consult these documents as needed:
 ## Important Notes
 
 - `src/renderer/nodeBridge.types.ts` is the source of truth for the IPC messages between the main and renderer processes, and it should not be modified.
+- Don't run lint. Run `npm run typecheck` for type checking.
