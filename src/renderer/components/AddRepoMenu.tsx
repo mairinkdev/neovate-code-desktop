@@ -13,7 +13,7 @@ interface AddRepoMenuProps {
 export const AddRepoMenu = ({ children }: AddRepoMenuProps) => {
   const [open, setOpen] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
-  const { request, addRepo, addWorkspace, repos } = useStore();
+  const { request, addRepo, addWorkspace, repos, selectWorkspace } = useStore();
 
   const handleOpenProject = async () => {
     // Prevent multiple simultaneous operations
@@ -86,9 +86,12 @@ export const AddRepoMenu = ({ children }: AddRepoMenuProps) => {
             workspacesResponse.success &&
             workspacesResponse.data?.workspaces
           ) {
-            // Add all workspaces to the store
-            for (const workspace of workspacesResponse.data.workspaces) {
+            const workspaces = workspacesResponse.data.workspaces;
+            for (const workspace of workspaces) {
               addWorkspace(workspace);
+            }
+            if (workspaces.length > 0) {
+              selectWorkspace(workspaces[0].id);
             }
           } else if (!workspacesResponse.success) {
             // Log warning if workspace fetch fails, but continue
