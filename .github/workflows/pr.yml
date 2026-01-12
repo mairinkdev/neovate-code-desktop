@@ -16,7 +16,7 @@ jobs:
         include:
           - os: macos-latest
             arch: arm64
-          - os: macos-13
+          - os: macos-15-intel
             arch: x64
     runs-on: ${{ matrix.os }}
     steps:
@@ -58,14 +58,17 @@ jobs:
             const arm64 = artifacts.find(a => a.name === 'neovate-dev-arm64');
             const x64 = artifacts.find(a => a.name === 'neovate-dev-x64');
 
+            const artifactUrl = (artifact) => 
+              `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}/artifacts/${artifact.id}`;
+
             const body = [
               identifier,
               '## 🎉 Build Ready',
               '',
               '| Architecture | Download |',
               '|--------------|----------|',
-              `| Apple Silicon | ${arm64 ? `[Download](${arm64.archive_download_url})` : '⏳'} |`,
-              `| Intel | ${x64 ? `[Download](${x64.archive_download_url})` : '⏳'} |`,
+              `| Apple Silicon | ${arm64 ? `[Download](${artifactUrl(arm64)})` : '⏳'} |`,
+              `| Intel | ${x64 ? `[Download](${artifactUrl(x64)})` : '⏳'} |`,
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({
