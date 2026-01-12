@@ -17,3 +17,11 @@ $ npm run dev
 Then you should see the desktop app running in your browser.
 
 ![](https://pic.sorrycc.com/proxy/1765346778934-394421333.png)
+
+## Local Development with Custom @neovate/code
+
+To use a local development version of `@neovate/code`, set the `NEOVATE_CODE_CLI_PATH` environment variable:
+
+```bash
+NEOVATE_CODE_CLI_PATH=/path/to/neovate-code/dist/cli.mjs npm run dev
+```

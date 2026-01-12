@@ -123,12 +123,17 @@ export async function createNeovateServer(): Promise<ServerInstance> {
 }
 
 async function resolveCliPath(): Promise<string> {
+  const envPath = process.env.NEOVATE_CODE_CLI_PATH;
+  if (envPath) {
+    await fs.access(envPath);
+    return envPath;
+  }
+
   const appPath = isDev ? process.cwd() : app.getAppPath();
   const basePath = appPath.endsWith('app.asar')
     ? appPath.replace('app.asar', 'app.asar.unpacked')
     : appPath;
 
-  // Always use the CLI entry since packaged apps usually drop .bin symlinks.
   const cliPath = path.join(
     basePath,
     'node_modules/@neovate/code/dist/cli.mjs',
