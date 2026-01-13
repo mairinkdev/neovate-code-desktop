@@ -1,4 +1,3 @@
-import { ChevronDown } from 'lucide-react';
 import {
   createContext,
   memo,
@@ -17,12 +16,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/menu';
 import type { SessionData, WorkspaceData } from '../client/types/entities';
 import type { NormalizedMessage } from '../client/types/message';
 import { useStore } from '../store';
@@ -393,8 +386,6 @@ export const WorkspacePanel = ({
         style={{ backgroundColor: 'var(--bg-primary)' }}
       >
         <WorkspacePanel.Header />
-        {/* <WorkspacePanel.SessionTabs /> */}
-        {/* <WorkspacePanel.WorkspaceInfo /> */}
         <WorkspacePanel.Messages />
         <div
           className="p-4 flex flex-col gap-3"
@@ -429,34 +420,6 @@ export const WorkspacePanel = ({
 WorkspacePanel.Header = function Header() {
   const { workspace } = useWorkspaceContext();
   const request = useStore((state) => state.request);
-  const deleteWorkspace = useStore((state) => state.deleteWorkspace);
-  const selectWorkspace = useStore((state) => state.selectWorkspace);
-
-  const handleMerge = async () => {
-    try {
-      const response = await request('project.workspaces.merge', {
-        cwd: workspace.repoPath,
-        name: workspace.id,
-      });
-
-      if (response.success) {
-        deleteWorkspace(workspace.id);
-        selectWorkspace(null);
-      } else {
-        console.error('Merge failed:', response.error);
-      }
-    } catch (error) {
-      console.error('Merge failed:', error);
-    }
-  };
-
-  const handleCreatePR = () => {
-    toastManager.add({
-      type: 'info',
-      title: 'Create PR',
-      description: 'Create PR functionality is not implemented yet',
-    });
-  };
 
   return (
     <div
@@ -467,133 +430,9 @@ WorkspacePanel.Header = function Header() {
         className="text-base font-semibold"
         style={{ color: 'var(--text-primary)' }}
       >
-        {workspace.id}
+        {workspace.repoPath.split('/').pop()}
       </h2>
       <OpenAppButton cwd={workspace.worktreePath} request={request} />
-    </div>
-  );
-};
-
-WorkspacePanel.SessionTabs = function SessionTabs() {
-  const { allSessions, selectedSessionId, selectSession } =
-    useWorkspaceContext();
-  const createSession = useStore((state) => state.createSession);
-
-  if (allSessions.length === 0) {
-    return (
-      <div
-        className="flex items-center justify-between py-4 px-4"
-        style={{
-          borderBottom: '1px solid var(--border-subtle)',
-          backgroundColor: 'var(--bg-surface)',
-        }}
-      >
-        <p className="text-sm" style={{ color: '#999' }}>
-          No sessions yet
-        </p>
-        <Button variant="ghost" size="sm" onClick={createSession}>
-          + Create
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className="flex overflow-x-auto items-center"
-      style={{
-        borderBottom: '1px solid var(--border-subtle)',
-        backgroundColor: 'var(--bg-surface)',
-      }}
-    >
-      {allSessions.map((session) => (
-        <WorkspacePanel.SessionTab
-          key={session.sessionId}
-          session={session}
-          isActive={session.sessionId === selectedSessionId}
-          onClick={() => selectSession(session.sessionId)}
-        />
-      ))}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={createSession}
-        className="ml-2 shrink-0"
-      >
-        + Create
-      </Button>
-    </div>
-  );
-};
-
-WorkspacePanel.SessionTab = function SessionTab({
-  session,
-  isActive,
-  onClick,
-}: {
-  session: SessionData;
-  isActive: boolean;
-  onClick: () => void;
-}) {
-  const summary = useMemo(() => {
-    if (session.summary) {
-      if (session.summary.length > 16) {
-        return session.summary.substring(0, 16) + '...';
-      }
-      return session.summary;
-    } else {
-      return 'New session';
-    }
-  }, [session.summary]);
-  return (
-    <div
-      className="px-4 py-2 text-sm cursor-pointer whitespace-nowrap"
-      style={
-        isActive
-          ? { borderBottom: '2px solid #0070f3', color: 'var(--text-primary)' }
-          : { color: '#666' }
-      }
-      onClick={onClick}
-    >
-      {summary}
-    </div>
-  );
-};
-
-WorkspacePanel.WorkspaceInfo = function WorkspaceInfo() {
-  const { workspace } = useWorkspaceContext();
-
-  return (
-    <div
-      className="p-3 text-sm"
-      style={{
-        backgroundColor: 'var(--bg-surface)',
-        borderBottom: '1px solid var(--border-subtle)',
-      }}
-    >
-      <div
-        className="flex items-center"
-        style={{ color: 'var(--text-primary)' }}
-      >
-        <BranchIcon />
-        <span className="ml-2">{workspace.branch}</span>
-        <span className="mx-2">•</span>
-        <span style={{ color: '#666' }}>
-          {workspace.metadata.status === 'active'
-            ? 'Active'
-            : workspace.metadata.status}
-        </span>
-        {workspace.gitState.isDirty && (
-          <>
-            <span className="mx-2">•</span>
-            <span style={{ color: '#f59e0b' }}>Uncommitted changes</span>
-          </>
-        )}
-        <span className="ml-auto flex items-center">
-          <StatusIcon status={workspace.metadata.status} />
-          <span className="ml-1 capitalize">{workspace.metadata.status}</span>
-        </span>
-      </div>
     </div>
   );
 };
